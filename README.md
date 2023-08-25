@@ -4,14 +4,14 @@ This repo contains the evaluation metric functions used for the [**TopCoW2023 ch
 
 ## `metric_functions.py`
 
-In `./metric_functions.py`, you will find our implementations for evaluating the submitted segmentation predictions.
+In [`./metric_functions.py`](./metric_functions.py), you will find our implementations for evaluating the submitted segmentation predictions.
 We assess the metrics such as Dice coefficient and cl-Dice.
 
 ## Unit-test with `test_metric_functions.py`
 
 The documentations for our code come in the form of unit-tests.
-The file `./test_metric_functions.py` contains the test cases for the evaluation metrics.
-Nifti files used in the test cases are stored in the folder `./test_metrics/`.
+The file [`./test_metric_functions.py`](./test_metric_functions.py) contains the test cases for the evaluation metrics.
+Nifti files used in the test cases are stored in the folder [`./test_metrics/`](./test_metrics/).
 
 ```bash
 # simply run pytest
