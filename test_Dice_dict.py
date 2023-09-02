@@ -4,16 +4,21 @@ run the tests with pytest
 import math
 
 import pytest
-from skimage.morphology import skeletonize
 
 from constants import BIN_CLASS_LABEL_MAP, MUL_CLASS_LABEL_MAP, TASK
-from metric_functions import (
-    cl_score,
-    clDice,
-    convert_multiclass_to_binary,
-    dice_coefficient_all_classes,
-)
+from metric_functions import dice_coefficient_all_classes
 from utils_nii_mha_sitk import load_image_and_array_as_uint8
+
+##############################################################
+#   _______________________________
+# < 1. Tests for Dice and dice_dict >
+#   -------------------------------
+#          \   ^__^
+#           \  (oo)\_______
+#              (__)\       )\/\\
+#                  ||----w |
+#                  ||     ||
+##############################################################
 
 
 def test_DiceCoefficient_2D_binary():
@@ -59,7 +64,7 @@ def test_DiceCoefficient_2D_onlyLabel5():
     # binary seg task should be invalid for this test!
     # even though it only has one label class of 5
     with pytest.raises(AssertionError) as e_info:
-        dice_dict = dice_coefficient_all_classes(
+        dice_coefficient_all_classes(
             gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
         )
     assert str(e_info.value) == "Invalid binary segmentation"
@@ -111,17 +116,17 @@ def test_DiceCoefficient_2D_multiclass():
     )
     # ~= 0.6780
 
-    # binary seg task should be invalid for this test!
-    # because there are two classes
-    with pytest.raises(AssertionError) as e_info:
-        dice_dict = dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
-
     # there is an automatic conversion from multi-class to binary
     assert math.isclose(dice_dict["CoW"]["dice_score"], (2 * 15) / (24 + 16))
     # = 0.75
+
+    # binary seg task should be invalid for this test!
+    # because there are two classes
+    with pytest.raises(AssertionError) as e_info:
+        dice_coefficient_all_classes(
+            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
+        )
+    assert str(e_info.value) == "Invalid binary segmentation"
 
 
 def test_DiceCoefficient_2D_nonOverlapped_multiclass():
@@ -184,8 +189,8 @@ def test_DiceCoefficient_2D_nolabels_multiclass():
     """
     same as test_DiceCoefficient_2D_nolabels_binary but for multiclass
 
-    what if there is no labels in both gt and pred? -> avg=0
-    what if there is no labels in gt? -> avg=0
+    what if there is no labels in both gt and pred? -> avg=0, cow=0
+    what if there is no labels in gt? -> avg=0, cow=0
     """
     # mimic no labels in both gt and pred by reusing a clean slate
     gt_path = "test_metrics/shape_6x3_2D.nii.gz"
@@ -196,7 +201,10 @@ def test_DiceCoefficient_2D_nolabels_multiclass():
         gt=gt_img, pred=gt_img, task=TASK.MULTICLASS_SEGMENTATION
     )
 
-    assert dice_dict == {"average": {"label": "average", "dice_score": 0}}
+    assert dice_dict == {
+        "average": {"label": "average", "dice_score": 0},
+        "CoW": {"label": "CoW", "dice_score": 0},
+    }
 
     # gt is clean slate, but pred has some predictions
     gt_path = "test_metrics/shape_6x3_2D.nii.gz"
@@ -217,95 +225,82 @@ def test_DiceCoefficient_2D_nolabels_multiclass():
     }
 
 
-def test_cl_score_2D_blob():
+def test_multi_class_donut():
     """
-    6x3 2D with an elongated blob gt and a vertical columnn pred
-    this test for cl_score (topology precision & topology sensitivity)
+    a solid donut shape.
+        GT has only label-1
+        Pred is same shape but one side is label-6
     """
-    gt_path = "test_metrics/shape_6x3_2D_clDice_elong_gt.nii.gz"
-    pred_path = "test_metrics/shape_6x3_2D_clDice_elong_pred.nii.gz"
+    gt_path = "test_metrics/shape_5x7x9_3D_1donut.nii.gz"
+    pred_path = "test_metrics/shape_5x7x9_3D_1donut_multiclass.nii.gz"
 
-    _, gt_arr = load_image_and_array_as_uint8(gt_path)
-    _, pred_arr = load_image_and_array_as_uint8(pred_path)
+    gt_img, _ = load_image_and_array_as_uint8(gt_path)
+    pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    # NOTE: skeletonization works on binary images;
-    # need to convert multiclass to binary mask first
-    pred_mask = convert_multiclass_to_binary(pred_arr)
-    gt_mask = convert_multiclass_to_binary(gt_arr)
+    # multiclass seg task will give the following:
+    # label 1:
+    #        Dice = 2 * 18 / (18 + 30) = 0.75
+    # label 6:
+    #        Dice = 0
+    # merged binary:
+    #        Dice = 1
 
-    # clDice makes use of the skimage skeletonize method
-    # see https://scikit-image.org/docs/stable/auto_examples/edges/plot_skeleton.html#skeletonize
-
-    # tprec: Topology Precision
-    tprec = cl_score(s_skeleton=skeletonize(pred_mask), v_image=gt_mask)
-    assert tprec == (6 / 6)
-    # tsens: Topology Sensitivity
-    tsens = cl_score(s_skeleton=skeletonize(gt_mask), v_image=pred_mask)
-    assert tsens == (4 / 4)
-
-    # clDice = 2 * tprec * tsens / (tprec + tsens)
-    assert clDice(v_p_pred=pred_arr, v_l_gt=gt_arr) == 1
+    assert dice_coefficient_all_classes(
+        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
+    ) == {
+        "1": {"label": "BA", "dice_score": 0.7499999999999999},
+        "6": {"label": "L-ICA", "dice_score": 0.0},
+        "average": {"label": "average", "dice_score": 0.37499999999999994},
+        "CoW": {"label": "CoW", "dice_score": 1.0},
+    }
 
 
-def test_cl_score_2D_Tshaped():
+def test_dice_dict_e2e():
     """
-    5x5 2D with a T-shaped blob gt and a vertical columnn pred
-    this test for cl_score (topology precision & topology sensitivity)
+    end-to-end test for dice_dict
+    8-label cube made up of 8 of 4x4x4 sub-cubes
+        GT: fully filled up
+        Pred:
+            label 1, 3, 5, 7 fully filled up
+            label 2 middle 2x2x2 hollow
+            label 4 missing
+            label 6, 8 solid donut
     """
-    gt_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_gt.nii.gz"
-    pred_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_pred.nii.gz"
+    gt_path = "test_metrics/shape_8x8x8_3D_8Cubes_gt.nii.gz"
+    pred_path = "test_metrics/shape_8x8x8_3D_8Cubes_pred.nii.gz"
 
-    _, gt_arr = load_image_and_array_as_uint8(gt_path)
-    _, pred_arr = load_image_and_array_as_uint8(pred_path)
+    gt_img, _ = load_image_and_array_as_uint8(gt_path)
+    pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    # NOTE: skeletonization works on binary images;
-    # need to convert multiclass to binary mask first
-    pred_mask = convert_multiclass_to_binary(pred_arr)
-    gt_mask = convert_multiclass_to_binary(gt_arr)
+    # binary seg task should be invalid for this test!
+    # because there are 8 classes!
+    with pytest.raises(AssertionError) as e_info:
+        dice_coefficient_all_classes(
+            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
+        )
+    assert str(e_info.value) == "Invalid binary segmentation"
 
-    # clDice makes use of the skimage skeletonize method
-    # see https://scikit-image.org/docs/stable/auto_examples/edges/plot_skeleton.html#skeletonize
-
-    # tprec: Topology Precision
-    tprec = cl_score(s_skeleton=skeletonize(pred_mask), v_image=gt_mask)
-    assert tprec == (5 / 5)
-    # tsens: Topology Sensitivity
-    tsens = cl_score(s_skeleton=skeletonize(gt_mask), v_image=pred_mask)
-    assert tsens == (3 / 4)
-
-    # clDice = 2 * tprec * tsens / (tprec + tsens)
-    assert clDice(v_p_pred=pred_arr, v_l_gt=gt_arr) == (3 / 2) / (7 / 4)
-    # ~= 0.85714
-
-    """
-    same as test_cl_score_2D_Tshaped but on multiclass
-    """
-    # with multiclass labels
-    multiclass_gt_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_multiclass_gt.nii.gz"
-    multiclass_pred_path = (
-        "test_metrics/shape_5x5_2D_clDice_Tshaped_multiclass_pred.nii.gz"
-    )
-    _, multiclass_gt_arr = load_image_and_array_as_uint8(multiclass_gt_path)
-    _, multiclass_pred_arr = load_image_and_array_as_uint8(multiclass_pred_path)
-    multiclass_pred_mask = convert_multiclass_to_binary(multiclass_pred_arr)
-    multiclass_gt_mask = convert_multiclass_to_binary(multiclass_gt_arr)
-
-    # test_cl_score_2D_Tshaped should match test_cl_score_2D_Tshaped with multiclass!
-    assert tprec == cl_score(
-        s_skeleton=skeletonize(multiclass_pred_mask), v_image=multiclass_gt_mask
-    )
-
-    assert tsens == cl_score(
-        s_skeleton=skeletonize(multiclass_gt_mask), v_image=multiclass_pred_mask
-    )
-
-    assert clDice(v_p_pred=pred_arr, v_l_gt=gt_arr) == clDice(
-        v_p_pred=multiclass_pred_arr, v_l_gt=multiclass_gt_arr
-    )
-    assert clDice(v_p_pred=multiclass_pred_arr, v_l_gt=multiclass_gt_arr) == (
-        (3 / 2) / (7 / 4)
-    )
-    # ~= 0.85714
-
-
-# def test_BettiNumber
+    # multiclass seg task will give the following:
+    # label 1, 3, 5, 7 have Dice of 1.0
+    # label 2 middle 2x2x2 hollow:
+    #        Dice = 2 * 56 / (64 + 56) = 0.93
+    # label 4 missing:
+    #        Dice = 0
+    # label 6, 8 solid donut:
+    #        Dice = 2 * 48 / (64 + 48) = 0.857
+    # merged binary:
+    #        Dice = 2 * (512 -8 -64 -16 -16) / (408 + 512) = 0.8869
+    assert dice_coefficient_all_classes(
+        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
+    ) == {
+        "1": {"label": "BA", "dice_score": 1.0},
+        "2": {"label": "R-PCA", "dice_score": 0.9333333333333333},
+        "3": {"label": "L-PCA", "dice_score": 1.0},
+        "4": {"label": "R-ICA", "dice_score": 0.0},
+        "5": {"label": "R-MCA", "dice_score": 1.0},
+        "6": {"label": "L-ICA", "dice_score": 0.8571428571428571},
+        "7": {"label": "L-MCA", "dice_score": 1.0},
+        "8": {"label": "R-Pcom", "dice_score": 0.8571428571428571},
+        "average": {"label": "average", "dice_score": 0.8309523809523809},
+        "CoW": {"label": "CoW", "dice_score": 0.8869565217391304},
+    }
