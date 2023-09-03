@@ -242,11 +242,9 @@ def test_bettiError_nolabels_binary():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
 
-    dice_dict = betti_number_error_all_classes(
+    assert betti_number_error_all_classes(
         gt=gt_img, pred=gt_img, task=TASK.BINARY_SEGMENTATION
-    )
-
-    assert dice_dict == {"1": {"label": "CoW", "Betti_0_error": 0, "Betti_1_error": 0}}
+    ) == {"1": {"label": "CoW", "Betti_0_error": 0, "Betti_1_error": 0}}
 
     # gt is clean slate, but pred has some predictions
     gt_path = "test_metrics/shape_6x3_2D.nii.gz"
@@ -255,11 +253,9 @@ def test_bettiError_nolabels_binary():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    dice_dict = betti_number_error_all_classes(
+    assert betti_number_error_all_classes(
         gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-    )
-
-    assert dice_dict == {"1": {"label": "CoW", "Betti_0_error": 1, "Betti_1_error": 0}}
+    ) == {"1": {"label": "CoW", "Betti_0_error": 1, "Betti_1_error": 0}}
 
 
 def test_bettiError_nolabels_multiclass():
@@ -288,11 +284,9 @@ def test_bettiError_nolabels_multiclass():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    dice_dict = betti_number_error_all_classes(
+    assert betti_number_error_all_classes(
         gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
-
-    assert dice_dict == {
+    ) == {
         "1": {"label": "BA", "Betti_0_error": 1},
         "B0err_average": {"label": "B0err_average", "Betti_0_error": 1},
         "CoW": {"label": "CoW", "Betti_0_error": 1, "Betti_1_error": 0},
