@@ -242,7 +242,7 @@ def betti_number(img: np.array) -> List:
 
     b1 = b0 + b2 - euler_char_num  # Euler number = Betti:0 - Bett:1 + Betti:2
 
-    # print(f"Betti number: b0={b0}, b1={b1}, b2={b2}")
+    print(f"Betti number: b0 = {b0}, b1 = {b1}, b2 = {b2}")
 
     return [b0, b1, b2]
 
@@ -293,8 +293,13 @@ def betti_number_error_all_classes(
         # otherwise compute the Betti number error and update the betti_num_err_dict
 
         assert len(labels) == 1 and 1 in labels, "Invalid binary segmentation"
+
+        print("\nvoxel_label = CoW_binary")
+        print("~~~ gt_betti_numbers ~~~")
         gt_betti_numbers = betti_number(gt_array)
+        print("~~~ pred_betti_numbers ~~~")
         pred_betti_numbers = betti_number(pred_array)
+
         Betti_0_error = abs(pred_betti_numbers[0] - gt_betti_numbers[0])
         Betti_1_error = abs(pred_betti_numbers[1] - gt_betti_numbers[1])
         betti_num_err_dict["1"] = {
@@ -320,14 +325,14 @@ def betti_number_error_all_classes(
         sum_scores = 0
 
         for voxel_label in labels:
-            # print("\nvoxel_label = ", voxel_label)
+            print("\nvoxel_label = ", voxel_label)
             # filter the view by that label
             filtered_gt = filter_mask_by_label(gt_array, voxel_label)
             filtered_pred = filter_mask_by_label(pred_array, voxel_label)
 
-            # print("~~~ gt_betti_numbers ~~~")
+            print("~~~ gt_betti_numbers ~~~")
             gt_betti_numbers = betti_number(filtered_gt)
-            # print("~~~ pred_betti_numbers ~~~")
+            print("~~~ pred_betti_numbers ~~~")
             pred_betti_numbers = betti_number(filtered_pred)
 
             Betti_0_error = abs(pred_betti_numbers[0] - gt_betti_numbers[0])
@@ -345,7 +350,7 @@ def betti_number_error_all_classes(
             "Betti_0_error": overall_Betti_0_error,
         }
 
-        # print("\nvoxel_label = merged_binary")
+        print("\nvoxel_label = merged_binary")
         # multi-class segmentation is also automatically considered for binary task
         # binary task score is done by binary-thresholding the sitk Image
         gt_bin = sitk.BinaryThreshold(
@@ -366,9 +371,9 @@ def betti_number_error_all_classes(
             sitk.GetArrayFromImage(pred_bin).transpose((2, 1, 0)).astype(np.uint8)
         )
 
-        # print("~~~ gt_betti_numbers ~~~")
+        print("~~~ gt_betti_numbers ~~~")
         gt_betti_numbers = betti_number(gt_bin_array)
-        # print("~~~ pred_betti_numbers ~~~")
+        print("~~~ pred_betti_numbers ~~~")
         pred_betti_numbers = betti_number(pred_bin_array)
 
         Betti_0_error = abs(pred_betti_numbers[0] - gt_betti_numbers[0])

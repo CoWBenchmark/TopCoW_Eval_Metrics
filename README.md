@@ -6,12 +6,11 @@ This repo contains the evaluation metric functions used for the [**TopCoW2023 ch
 
 In [`./metric_functions.py`](./metric_functions.py), you will find our implementations for evaluating the submitted segmentation predictions.
 
-Four evaluation metrics with equal weights for binary (CoW vessel vs background) segmentation task:
+Three evaluation metrics with equal weights for binary (CoW vessel vs background) segmentation task:
 
 1. Dice similarity coefficient
 2. cl-Dice
 3. Betti number 0 errors
-4. Betti number 1 errors
 
 Three evaluation metrics with equal weights for multi-class (CoW anatomical vessels) segmentation task:
 
