@@ -25,13 +25,20 @@ In [`./topcow24_eval/metrics/seg_metrics/`](./topcow24_eval/metrics/seg_metrics/
 
 Seven evaluation metrics with equal weights for multi-class (CoW anatomical vessels) segmentation task:
 
-1. Class-average Dice similarity coefficient: [`./topcow24_eval/metrics/seg_metrics/cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_dice.py)
-2. Centerline Dice (clDice) on merged binary mask: [`./topcow24_eval/metrics/seg_metrics/clDice.py`](./topcow24_eval/metrics/seg_metrics/clDice.py)
-3. Class-average 0-th Betti number error: [`./topcow24_eval/metrics/seg_metrics/cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_b0.py)
-4. Class-average Hausdorff Distance 95% Percentile (HD95): [`./topcow24_eval/metrics/seg_metrics/cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_hd95.py)
-5. Average F1 score (harmonic mean of the precision and recall) for detection of the "Group 2 CoW components": [`./topcow24_eval/metrics/seg_metrics/detection_grp2_labels.py`](./topcow24_eval/metrics/seg_metrics/detection_grp2_labels.py)
-6. Variant-balanced graph classification accuracy: [`./topcow24_eval/metrics/seg_metrics/graph_classification/`](./topcow24_eval/metrics/seg_metrics/graph_classification/)
-7. Variant-balanced topology match rate: [`./topcow24_eval/metrics/seg_metrics/topology_matching/`](./topcow24_eval/metrics/seg_metrics/topology_matching/)
+1. Class-average Dice similarity coefficient:
+    * [`cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_dice.py)
+2. Centerline Dice (clDice) on merged binary mask:
+    * [`clDice.py`](./topcow24_eval/metrics/seg_metrics/clDice.py)
+3. Class-average 0-th Betti number error:
+    * [`cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_b0.py)
+4. Class-average Hausdorff Distance 95% Percentile (HD95):
+    * [`cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_hd95.py)
+5. Average F1 score (harmonic mean of the precision and recall) for detection of the "Group 2 CoW components":
+    * [`detection_grp2_labels.py`](./topcow24_eval/metrics/seg_metrics/detection_grp2_labels.py)
+6. Variant-balanced graph classification accuracy:
+    * [`graph_classification.py`](./topcow24_eval/metrics/seg_metrics/graph_classification/graph_classification.py)
+7. Variant-balanced topology match rate:
+    * [`topology_matching.py`](./topcow24_eval/metrics/seg_metrics/topology_matching/topology_matching.py)
 
 ### Bounding box metrics
 
@@ -50,12 +57,18 @@ Please check our test cases to see the expected inputs and outputs, expected beh
 
 The files with names that follow the form `test_*.py` contain the test cases for the evaluation metrics.
 
-* Dice: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py)
-* clDice: [`./topcow24_eval/metrics/seg_metrics/test_clDice.py`](./topcow24_eval/metrics/seg_metrics/test_clDice.py)
-* Betti-0 number error: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py)
-* HD and HD95: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py)
-* graph classification: [`./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py`](./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py)
-* topology matching [`./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
+* Dice:
+    * [`test_cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py)
+* clDice:
+    * [`test_clDice.py`](./topcow24_eval/metrics/seg_metrics/test_clDice.py)
+* Betti-0 number error:
+    * [`test_cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py)
+* HD and HD95:
+    * [`test_cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py)
+* graph classification:
+    * [`test_graph_classification.py`](./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py)
+* topology matching:
+    * [`test_topology_matching.py](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
 
 Test asset files used in the test cases are stored in the folder [`./test_assets/`](./test_assets/).
 
