@@ -1,7 +1,9 @@
 """
 utility functions to work with nibael, mha and SimpleITK
 """
+
 import os
+from typing import Tuple
 
 import nibabel as nib
 import numpy as np
@@ -35,7 +37,9 @@ def make_dummy_mask(filename, shape=(3, 3, 3)):
     print(f"{filename}.nii.gz SAVED!\n")
 
 
-def load_image_and_array_as_uint8(path):
+def load_image_and_array_as_uint8(
+    path, log_sitk_attr=False
+) -> Tuple[sitk.Image, np.ndarray]:
     """
     Loads segmentation image (nifti or mha) from path,
     cast it to uint8 and returns the SimpleITK.Image and np array
@@ -43,7 +47,9 @@ def load_image_and_array_as_uint8(path):
     print(f"\n-- call load_image_and_array_as_uint8({path})")
     # read image
     img = sitk.ReadImage(path)
-    access_sitk_attr(img)
+
+    if log_sitk_attr:
+        access_sitk_attr(img)
 
     # Cast to the same type
     caster = sitk.CastImageFilter()

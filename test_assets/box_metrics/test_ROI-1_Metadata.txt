@@ -1,0 +1,3 @@
+--- ROI Meta Data ---
+Size (Voxels): 11 22 33
+Location (Voxels): 0 0 7

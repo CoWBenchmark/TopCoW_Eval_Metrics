@@ -1,50 +1,82 @@
 # TopCoW Evaluation Metrics 🐮
 
-This repo contains the evaluation metric functions used for the [**TopCoW2023 challenge**](https://topcow23.grand-challenge.org/) on grand-challnge (GC).
+This repo contains the package to compute the evaluation metrics for the [**TopCoW2024 challenge**](https://topcow24.grand-challenge.org/) on grand-challnge (GC).
 
-## `metric_functions.py`
+## `topcow24_eval` package
 
-In [`./metric_functions.py`](./metric_functions.py), you will find our implementations for evaluating the submitted segmentation predictions.
+At the root folder, there is a [`pyproject.toml`](./pyproject.toml) config file that can set up the evaluation project folder
+as a local pip module called **`topcow24_eval`** for running the evaluations in your python project.
 
-Three evaluation metrics with equal weights for binary (CoW vessel vs background) segmentation task:
+To setup and install `topcow24_eval` package:
 
-1. Dice similarity coefficient
-2. cl-Dice
-3. Betti number 0 errors
+```sh
+# from topcow24_eval root
 
-Three evaluation metrics with equal weights for multi-class (CoW anatomical vessels) segmentation task:
+# use py3.10
+python3.10 -m venv env_py310
+source env_py310/bin/activate
 
-1. Class-average Dice similarity coefficient
-2. Binary-merged cl-Dice
-3. Class-average Betti number 0 errors
+pip install -e ".[dev]"
+```
 
-**NOTE:** Participants can choose to only tackle the multi-class segmentation task, as submissions to multi-class segmentation tasks are automatically evaluated by us for binary segmentation performance.
+### Segmentation metrics
 
-## Unit-test for `test_*.py`
+In [`./topcow24_eval/metrics/seg_metrics/`](./topcow24_eval/metrics/seg_metrics/), you will find our implementations for evaluating the submitted segmentation predictions.
 
-The documentations for our code come in the form of unit-tests.
+Seven evaluation metrics with equal weights for multi-class (CoW anatomical vessels) segmentation task:
+
+1. Class-average Dice similarity coefficient: [`./topcow24_eval/metrics/seg_metrics/cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_dice.py)
+2. Centerline Dice (clDice) on merged binary mask: [`./topcow24_eval/metrics/seg_metrics/clDice.py`](./topcow24_eval/metrics/seg_metrics/clDice.py)
+3. Class-average 0-th Betti number error: [`./topcow24_eval/metrics/seg_metrics/cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_b0.py)
+4. Class-average Hausdorff Distance 95% Percentile (HD95): [`./topcow24_eval/metrics/seg_metrics/cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/cls_avg_hd95.py)
+5. Average F1 score (harmonic mean of the precision and recall) for detection of the "Group 2 CoW components": [`./topcow24_eval/metrics/seg_metrics/detection_grp2_labels.py`](./topcow24_eval/metrics/seg_metrics/detection_grp2_labels.py)
+6. Variant-balanced graph classification accuracy: [`./topcow24_eval/metrics/seg_metrics/graph_classification/`](./topcow24_eval/metrics/seg_metrics/graph_classification/)
+7. Variant-balanced topology match rate: [`./topcow24_eval/metrics/seg_metrics/topology_matching/`](./topcow24_eval/metrics/seg_metrics/topology_matching/)
+
+### Bounding box metrics
+
+Coming soon
+
+### Graph Classification metrics
+
+Coming soon
+
+---
+
+## Unit test for `test_*.py`
+
+The documentations for our code come in the form of unit tests.
+Please check our test cases to see the expected inputs and outputs, expected behaviors and calculations.
+
 The files with names that follow the form `test_*.py` contain the test cases for the evaluation metrics.
 
-* Dice: [`./test_Dice_dict.py`](./test_Dice_dict.py)
-* clDice: [`./test_clDice.py`](./test_clDice.py)
-* Betti number error: [`./test_betti_num.py`](./test_betti_num.py)
+* Dice: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py)
+* clDice: [`./topcow24_eval/metrics/seg_metrics/test_clDice.py`](./topcow24_eval/metrics/seg_metrics/test_clDice.py)
+* Betti-0 number error: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py)
+* HD and HD95: [`./topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py`](./topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py)
+* graph classification: [`./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py`](./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py)
+* topology matching [`./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
 
-Nifti files used in the test cases are stored in the folder [`./test_metrics/`](./test_metrics/).
+Test asset files used in the test cases are stored in the folder [`./test_assets/`](./test_assets/).
 
-Simply invode the tests by `pytest .`:
+Simply invoke the tests by `pytest .`:
 
 ```bash
 # simply run pytest
 $ pytest .
-============================================ test session starts =============================================
-platform linux -- Python 3.11.4, pytest-7.4.0, pluggy-1.2.0
-rootdir: /home/svd/Documents/TopCoWEvaluation
-plugins: anyio-3.7.1
-collected 23 items                                                                                           
 
-test_Dice_dict.py ........                                                                             [ 34%]
-test_betti_num.py ............                                                                         [ 86%]
-test_clDice.py ...                                                                                     [100%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_edge_criteria.py ..                                                                        [  2%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_generate_edgelist.py ...                                                                   [  6%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py .                                                                  [  7%]
+topcow24_eval/metrics/seg_metrics/test_clDice.py ....                                                                                                  [ 12%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py ...............                                                                                   [ 31%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py ...........                                                                                     [ 45%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py .............                                                                                   [ 62%]
+topcow24_eval/metrics/seg_metrics/test_detection_grp2_labels.py ......                                                                                 [ 69%]
+topcow24_eval/metrics/seg_metrics/test_generate_cls_avg_dict.py ...........                                                                            [ 83%]
+topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py ......                                                                   [ 91%]
+topcow24_eval/utils/test_utils_mask.py .....                                                                                                           [ 97%]
+topcow24_eval/utils/test_utils_neighborhood.py ..                                                                                                      [100%]
 
-============================================= 23 passed in 0.50s =============================================
+======================================= 80 passed, 7 warnings in 7.15s =======================================
 ```

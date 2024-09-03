@@ -9,6 +9,7 @@ class TRACK(Enum):
 class TASK(Enum):
     """
     the values of the strings are different from TopCoWAlgorithm
+    for segmentation metrics only
     """
 
     BINARY_SEGMENTATION = "binary"
@@ -36,5 +37,31 @@ MUL_CLASS_LABEL_MAP = {
 
 BIN_CLASS_LABEL_MAP = {
     "0": "Background",
-    "1": "CoW",
+    "1": "MergedBin",
 }
+
+# NOTE: in case of missing values (FP or FN), set the HD95
+# to be roughly the maximum distance in ROI = 90 mm
+HD95_UPPER_BOUND = 90
+
+# Group 2 CoW components
+GROUP2_COW_COMPONENTS_LABELS = (8, 9, 10, 15)
+
+# IoU threshold for detection of Group 2 CoW components
+# a lenient threshold is set to tolerate more detections
+IOU_THRESHOLD = 0.25
+
+
+# detection results
+class DETECTION(Enum):
+    TP = "TP"
+    TN = "TN"
+    FP = "FP"
+    FN = "FN"
+
+
+# for CoW graph classification and topology matching
+# Anterior CoW components
+ANTERIOR_LABELS = (10, 11, 12, 15)
+# Posterior CoW components
+POSTERIOR_LABELS = (2, 3, 8, 9)

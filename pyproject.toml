@@ -1,0 +1,27 @@
+[project]
+name = "topcow24_eval"
+version = "0.0.2"
+description = "Evaluations for TopCoW24 MICCAI Challenge"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "nibabel==5.1.0",
+    "numpy==1.24.4",
+    "pyyaml",
+    "SimpleITK==2.2.0",
+    "scikit-image==0.22.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[project.urls]
+Repository = "https://github.com/CoWBenchmark/TopCoW_Eval_Metrics"
+Issues = "https://github.com/CoWBenchmark/TopCoW_Eval_Metrics/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["topcow24_eval"]

@@ -1,11 +1,14 @@
 """
 run the tests with pytest
 """
-import numpy as np
-from skimage.morphology import skeletonize, skeletonize_3d
 
-from metric_functions import cl_score, clDice, convert_multiclass_to_binary
-from utils_nii_mha_sitk import load_image_and_array_as_uint8
+from pathlib import Path
+
+import numpy as np
+from clDice import cl_score, clDice
+from skimage.morphology import skeletonize, skeletonize_3d
+from topcow24_eval.utils.utils_mask import convert_multiclass_to_binary
+from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 ##############################################################
 #   ________________________________
@@ -17,6 +20,8 @@ from utils_nii_mha_sitk import load_image_and_array_as_uint8
 #                  ||----w |
 #                  ||     ||
 ##############################################################
+
+TESTDIR_2D = Path("test_assets/seg_metrics/2D")
 
 
 def test_cl_score_skeletonize_ellipse():
@@ -100,8 +105,8 @@ def test_cl_score_2D_blob():
     6x3 2D with an elongated blob gt and a vertical columnn pred
     this test for cl_score (topology precision & topology sensitivity)
     """
-    gt_path = "test_metrics/shape_6x3_2D_clDice_elong_gt.nii.gz"
-    pred_path = "test_metrics/shape_6x3_2D_clDice_elong_pred.nii.gz"
+    gt_path = TESTDIR_2D / "shape_6x3_2D_clDice_elong_gt.nii.gz"
+    pred_path = TESTDIR_2D / "shape_6x3_2D_clDice_elong_pred.nii.gz"
 
     _, gt_mask = load_image_and_array_as_uint8(gt_path)
     _, pred_mask = load_image_and_array_as_uint8(pred_path)
@@ -129,8 +134,8 @@ def test_cl_score_2D_Tshaped():
     5x5 2D with a T-shaped blob gt and a vertical columnn pred
     this test for cl_score (topology precision & topology sensitivity)
     """
-    gt_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_gt.nii.gz"
-    pred_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_pred.nii.gz"
+    gt_path = TESTDIR_2D / "shape_5x5_2D_clDice_Tshaped_gt.nii.gz"
+    pred_path = TESTDIR_2D / "shape_5x5_2D_clDice_Tshaped_pred.nii.gz"
 
     _, gt_mask = load_image_and_array_as_uint8(gt_path)
     _, pred_mask = load_image_and_array_as_uint8(pred_path)
@@ -157,9 +162,9 @@ def test_cl_score_2D_Tshaped():
     same as test_cl_score_2D_Tshaped but on multiclass
     """
     # with multiclass labels
-    multiclass_gt_path = "test_metrics/shape_5x5_2D_clDice_Tshaped_multiclass_gt.nii.gz"
+    multiclass_gt_path = TESTDIR_2D / "shape_5x5_2D_clDice_Tshaped_multiclass_gt.nii.gz"
     multiclass_pred_path = (
-        "test_metrics/shape_5x5_2D_clDice_Tshaped_multiclass_pred.nii.gz"
+        TESTDIR_2D / "shape_5x5_2D_clDice_Tshaped_multiclass_pred.nii.gz"
     )
     _, multiclass_gt_arr = load_image_and_array_as_uint8(multiclass_gt_path)
     _, multiclass_pred_arr = load_image_and_array_as_uint8(multiclass_pred_path)
@@ -194,3 +199,35 @@ def test_cl_score_2D_Tshaped():
         == ((3 / 2) / (7 / 4))
     )
     # ~= 0.85714
+
+
+def test_clDice_Fig51():
+    """
+    example from Fig 51 of
+    Common Limitations of Image Processing Metrics: A Picture Story
+
+    images labeled with label-6, so need to convert to binary
+
+    GT vs Pred 1 clDice = 0.86
+    GT vs Pred 2 clDice = 0.67
+    """
+    # with multiclass label-6
+    gt_path = TESTDIR_2D / "shape_6x3_2D_clDice_Fig51_gt.nii.gz"
+    pred_1_path = TESTDIR_2D / "shape_6x3_2D_clDice_Fig51_pred_1.nii.gz"
+    pred_2_path = TESTDIR_2D / "shape_6x3_2D_clDice_Fig51_pred_2.nii.gz"
+
+    _, gt_arr = load_image_and_array_as_uint8(gt_path)
+    _, pred_1_arr = load_image_and_array_as_uint8(pred_1_path)
+    _, pred_2_arr = load_image_and_array_as_uint8(pred_2_path)
+
+    # NOTE: skeletonization works on binary images;
+    # need to convert multiclass to binary mask first
+    gt_mask = convert_multiclass_to_binary(gt_arr)
+    pred_1_mask = convert_multiclass_to_binary(pred_1_arr)
+    pred_2_mask = convert_multiclass_to_binary(pred_2_arr)
+
+    # GT vs Pred 1 ~= 0.86
+    assert clDice(v_p_pred=pred_1_mask, v_l_gt=gt_mask) == 0.8571428571428571
+
+    # GT vs Pred 2 ~= 0.67
+    assert clDice(v_p_pred=pred_2_mask, v_l_gt=gt_mask) == 0.6666666666666666
