@@ -21,7 +21,7 @@ pip install -e ".[dev]"
 
 ### Segmentation metrics
 
-In [`./topcow24_eval/metrics/seg_metrics/`](./topcow24_eval/metrics/seg_metrics/), you will find our implementations for evaluating the submitted segmentation predictions.
+In [`topcow24_eval/metrics/seg_metrics/`](./topcow24_eval/metrics/seg_metrics/), you will find our implementations for evaluating the submitted segmentation predictions.
 
 Seven evaluation metrics with equal weights for multi-class (CoW anatomical vessels) segmentation task:
 
@@ -68,9 +68,9 @@ The files with names that follow the form `test_*.py` contain the test cases for
 * graph classification:
     * [`test_graph_classification.py`](./topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py)
 * topology matching:
-    * [`test_topology_matching.py](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
+    * [`test_topology_matching.py`](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
 
-Test asset files used in the test cases are stored in the folder [`./test_assets/`](./test_assets/).
+Test asset files used in the test cases are stored in the folder [`test_assets/`](./test_assets/).
 
 Simply invoke the tests by `pytest .`:
 
