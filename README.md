@@ -50,7 +50,7 @@ Coming soon
 
 ---
 
-## Unit test for `test_*.py`
+## Unit tests as documentation
 
 The documentations for our code come in the form of unit tests.
 Please check our test cases to see the expected inputs and outputs, expected behaviors and calculations.
