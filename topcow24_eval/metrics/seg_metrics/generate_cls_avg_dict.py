@@ -207,16 +207,33 @@ def generate_cls_avg_dict(
 
 def update_cls_avg_dict(cls_avg_dict, label, label_map, metric_keys, metric_scores):
     """
+    under a label or some class-average string,
+    for each metric_key in metric_keys,
     updates cls_avg_dict by appending
-    {metric_key:metric_score}
+        {metric_key:metric_score}
 
-    label can be int (voxel_label) or str (class averge key)
+    Params
+    ------
+    cls_avg_dict:
+        dict to mutate on
 
-    when label is f"ClsAvg{metric_key}"
-    is for_cls_avg, only updates its corresponding metric_key
+    label:
+        label can be int (voxel_label) or str (class averge key)
 
-    when label is voxel_label int
-    uses label_map and updates all metric_keys
+        when label is f"ClsAvg{metric_key}"
+        is for_cls_avg, only updates its corresponding metric_key
+
+        when label is voxel_label int
+        uses label_map and updates all metric_keys
+
+    label_map:
+        MUL_CLASS_LABEL_MAP or BIN_CLASS_LABEL_MAP
+
+    metric_keys:
+        list of metric_key for cls_avg_dict
+
+    metric_scores:
+        scores that correspond to the metric_keys 1-to-1
     """
     print("\n::update_cls_avg_dict()::\n")
     print(f"label = {label}")

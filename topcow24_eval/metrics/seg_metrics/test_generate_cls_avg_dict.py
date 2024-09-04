@@ -385,7 +385,7 @@ def test_generate_cls_avg_dict_label101112HD_multiclass():
     )
     # now matches the output from dummy_metric_func
     assert cls_avg_dict == {
-        # (label / 10, label / 2)
+        # lambda gt, pred, label: [label / 10, label / 2]
         "10": {
             "label": "Acom",
             "HD": 1.0,
@@ -401,7 +401,7 @@ def test_generate_cls_avg_dict_label101112HD_multiclass():
             "HD": 1.2,
             "HD95": 6.0,
         },
-        "ClsAvgHD": {"label": "ClsAvgHD", "HD": 1.0999999999999999},  # avg of 1.1
-        "ClsAvgHD95": {"label": "ClsAvgHD95", "HD95": 5.5},  # average
+        "ClsAvgHD": {"label": "ClsAvgHD", "HD": 1.0999999999999999},  # avg = 1.1
+        "ClsAvgHD95": {"label": "ClsAvgHD95", "HD95": 5.5},  # average = 5.5
         "MergedBin": {"label": "MergedBin", "HD": 0.1, "HD95": 0.5},
     }

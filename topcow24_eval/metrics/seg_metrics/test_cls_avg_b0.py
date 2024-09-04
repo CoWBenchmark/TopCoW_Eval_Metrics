@@ -133,6 +133,41 @@ def test_betti_number_error_single_label():
     assert label_3_b0err == 1  # 1 error for label-3
 
 
+def test_betti_number_error_single_label_blank_slices():
+    """
+    test_betti_number_error_single_label but with blank slices
+    """
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+
+    # slice 0 image1 blank, image2 has one label-7
+    image2[:, :, 0] = 7
+    # slice 1 image1 has two label-8, image2 blank
+    image1[2, 0, 1] = 8
+    image1[0, 2, 1] = 8
+    # slice 2 both blank
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    label_7_b0err = betti_number_error_single_label(
+        gt=image1,
+        pred=image2,
+        label=7,
+    )
+    label_8_b0err = betti_number_error_single_label(
+        gt=image1,
+        pred=image2,
+        label=8,
+    )
+
+    assert label_7_b0err == 1  # 1 error for label-7
+    assert label_8_b0err == 2  # 2 error for label-8
+
+
 def test_cls_avg_b0_RGB():
     """
     5x5 2D multiclass gt is three columns of label(1,2,3)
@@ -212,7 +247,7 @@ def test_twoIslands():
 
 def test_multi_class_twoIslands():
     """
-    similar to test_twoIslands() but have pred has two labels
+    similar to test_twoIslands() but the pred has two labels
     """
     gt_path = TESTDIR_3D / "shape_3x4x2_3D_twoIslands.nii.gz"
     pred_path = TESTDIR_3D / "shape_3x4x2_3D_twoIslands_multiclass.nii.gz"

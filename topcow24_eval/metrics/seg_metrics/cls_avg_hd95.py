@@ -90,9 +90,10 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> List[f
     assert arr_is_binary(gt_label_arr), "hd95_single_label expects binary gt_arr"
     assert arr_is_binary(pred_label_arr), "hd95_single_label expects binary pred_arr"
 
-    if np.sum(gt_label_arr) == 0 or np.sum(pred_label_arr) == 0:
-        print(f"[!!Warning] label-{label} no boundary to compute!!")
-        return HD95_UPPER_BOUND, HD95_UPPER_BOUND
+    # check if either gt or pred label_arr is all zero
+    if (not np.any(gt_label_arr)) or (not np.any(pred_label_arr)):
+        print(f"[!!Warning] label-{label} empty for gt or pred")
+        return [HD95_UPPER_BOUND, HD95_UPPER_BOUND]
 
     ##################################################################
     # Now the real HD95 implementation :)

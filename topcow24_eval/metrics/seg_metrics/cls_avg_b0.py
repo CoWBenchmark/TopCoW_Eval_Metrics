@@ -63,7 +63,7 @@ def connected_components(img: np.array) -> Tuple[int, List, List]:
 
     print(f"# b0 = {b0}")
 
-    # get the statistics of the sizes of the connected regions
+    # get the properties of the connected regions
     # by skimage.measure.regionprops() function
     props = measure.regionprops(b0_labels)
     sizes = [obj.area for obj in props]
@@ -99,10 +99,20 @@ def betti_number_error_single_label(
     assert arr_is_binary(gt_label_arr), "expects binary gt_arr"
     assert arr_is_binary(pred_label_arr), "expects binary pred_arr"
 
+    # if filtered label_arr is blank, b0 = 0
     print("~~~ gt_b0 ~~~")
-    gt_b0 = connected_components(gt_label_arr)[0]
+    if not np.any(gt_label_arr):
+        print("blank")
+        gt_b0 = 0
+    else:
+        gt_b0 = connected_components(gt_label_arr)[0]
+
     print("~~~ pred_b0 ~~~")
-    pred_b0 = connected_components(pred_label_arr)[0]
+    if not np.any(pred_label_arr):
+        print("blank")
+        pred_b0 = 0
+    else:
+        pred_b0 = connected_components(pred_label_arr)[0]
 
     Betti_0_error = abs(pred_b0 - gt_b0)
 

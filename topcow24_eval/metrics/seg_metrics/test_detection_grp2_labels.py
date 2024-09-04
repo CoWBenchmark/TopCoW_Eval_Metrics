@@ -4,6 +4,7 @@ run the tests with pytest
 
 from pathlib import Path
 
+import SimpleITK as sitk
 from detection_grp2_labels import (
     detection_grp2_labels,
     detection_single_label,
@@ -120,6 +121,42 @@ def test_iou_single_label_Fig54_5class():
     label = 5
     iou_score = iou_single_label(gt=gt_img, pred=pred_img, label=label)
     assert iou_score == 0.42857142857142855
+
+
+def test_iou_single_label_blank_slices():
+    """
+    iou_single_label() but with blank slices
+    """
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+
+    # slice 0 image1 blank, image2 has one label-7
+    image2[:, :, 0] = 7
+    # slice 1 image1 has two label-8, image2 blank
+    image1[2, 0, 1] = 8
+    image1[0, 2, 1] = 8
+    # slice 2 both blank
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    # label-7
+    label = 7
+    iou = iou_single_label(gt=image1, pred=image2, label=label)
+    assert iou == 0
+
+    # label-8
+    label = 8
+    iou = iou_single_label(gt=image1, pred=image2, label=label)
+    assert iou == 0
+
+    # label-9 (not in either gt or pred)
+    label = 9
+    iou = iou_single_label(gt=image1, pred=image2, label=label)
+    assert iou == 0
 
 
 ###########################################################

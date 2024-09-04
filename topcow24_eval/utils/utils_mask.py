@@ -25,7 +25,7 @@ def extract_labels(array1: np.array, array2: Optional[np.array] = None) -> List[
     print("labels = ", labels)
 
     # remove background 0
-    filtered_labels = labels[labels != 0].tolist()
+    filtered_labels = [int(x) for x in labels[labels != 0]]
     print(f"filtered_labels = {filtered_labels}")
     return filtered_labels
 

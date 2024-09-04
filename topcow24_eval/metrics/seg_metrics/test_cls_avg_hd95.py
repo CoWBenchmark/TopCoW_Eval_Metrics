@@ -218,10 +218,10 @@ def test_hd95_single_label_FPFN():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
 
-    assert hd95_single_label(gt=gt_img, pred=gt_img, label=1) == (
+    assert hd95_single_label(gt=gt_img, pred=gt_img, label=1) == [
         HD95_UPPER_BOUND,
         HD95_UPPER_BOUND,
-    )
+    ]
 
     # NOTE: in fact even for a mask with valid labels,
     # as long as the filtered img is empty in img == label
@@ -235,19 +235,19 @@ def test_hd95_single_label_FPFN():
         gt=img,
         pred=img,
         label=label,
-    ) == (
+    ) == [
         HD95_UPPER_BOUND,
         HD95_UPPER_BOUND,
-    )
+    ]
     label = 13
     assert hd95_single_label(
         gt=img,
         pred=img,
         label=label,
-    ) == (
+    ) == [
         HD95_UPPER_BOUND,
         HD95_UPPER_BOUND,
-    )
+    ]
 
 
 def test_hd95_single_label_3D_voxel_spacing():

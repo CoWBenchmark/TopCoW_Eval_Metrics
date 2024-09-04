@@ -6,7 +6,8 @@ import math
 from pathlib import Path
 
 import pytest
-from cls_avg_dice import dice_coefficient_all_classes
+import SimpleITK as sitk
+from cls_avg_dice import dice_coefficient_all_classes, dice_coefficient_single_label
 from topcow24_eval.constants import BIN_CLASS_LABEL_MAP, MUL_CLASS_LABEL_MAP, TASK
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
@@ -23,6 +24,49 @@ from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 TESTDIR_2D = Path("test_assets/seg_metrics/2D")
 TESTDIR_3D = Path("test_assets/seg_metrics/3D")
+
+
+def test_dice_coefficient_single_label_blank_slices():
+    """
+    dice_coefficient_single_label() but with blank slices
+    """
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+
+    # slice 0 image1 blank, image2 has one label-7
+    image2[:, :, 0] = 7
+    # slice 1 image1 has two label-8, image2 blank
+    image1[2, 0, 1] = 8
+    image1[0, 2, 1] = 8
+    # slice 2 image1 all label-9, image2 one label-9
+    image1[:, :, 2] = 9
+    image2[0, 0, 2] = 9
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    label_7_dice = dice_coefficient_single_label(
+        gt=image1,
+        pred=image2,
+        label=7,
+    )
+    label_8_dice = dice_coefficient_single_label(
+        gt=image1,
+        pred=image2,
+        label=8,
+    )
+    label_9_dice = dice_coefficient_single_label(
+        gt=image1,
+        pred=image2,
+        label=9,
+    )
+
+    assert label_7_dice == 0  # dice = 0 for label-7
+    assert label_8_dice == 0  # dice = 0 for label-8
+    assert label_9_dice == 0.19999999999999998  # dice = 2/10 for label-9
 
 
 def test_DiceCoefficient_2D_different_dim():
@@ -176,7 +220,7 @@ def test_DiceCoefficient_2D_nonOverlapped_multiclass():
     }
 
 
-def test_DiceCoefficient_2D_nolabels_binary():
+def test_DiceCoefficient_2D_nolabels_task_binary():
     """
     what if there is no labels in both gt and pred? -> cow=0
     what if there is no labels in gt? -> cow=0
@@ -205,7 +249,7 @@ def test_DiceCoefficient_2D_nolabels_binary():
     assert dice_dict == {"1": {"label": "MergedBin", "Dice": 0}}
 
 
-def test_DiceCoefficient_2D_nolabels_multiclass():
+def test_DiceCoefficient_2D_nolabels_task_multiclass():
     """
     same as test_DiceCoefficient_2D_nolabels_binary but for multiclass
 
@@ -397,4 +441,50 @@ def test_DiceCoefficient_3D_Fig50():
         "15": {"label": "3rd-A2", "Dice": 0.5},
         "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0.65},
         "MergedBin": {"label": "MergedBin", "Dice": 2 / 3},
+    }
+
+
+def test_DiceCoefficient_topcow023mr():
+    """
+    topcow mr 023 vs LPS_ICA_PCA_flipped.nii.gz
+
+    Despite the slight difference in their directions,
+    the OverlapMeasures should be run
+
+    topcow_mr_roi_023.nii.gz
+    image.GetDirection() = (0.9998825394863241, -4.957000000637633e-12,
+    -0.015326684246574056, -2.8804510733315957e-06, 0.9999999823397805,
+    -0.00018791525753699667, 0.01532668333601454, 0.00018793732625326786,
+    0.9998825218183695)
+
+    LPS_ICA_PCA_flipped.nii.gz
+    image.GetDirection() = (0.9998825394653973, -1.440228107624726e-06,
+    -0.015326684246542236, -1.440228121515313e-06, 0.9999999823408161,
+    -0.00018792630485902698, 0.015326684904237034, 0.0001879262974336947,
+    0.9998825218162936)
+    """
+    testdir = Path("test_assets/seg_metrics/topcow_roi")
+
+    gt, _ = load_image_and_array_as_uint8(testdir / "topcow_mr_roi_023.nii.gz", True)
+    pred, _ = load_image_and_array_as_uint8(
+        testdir / "LPS_ICA_PCA_flipped.nii.gz", True
+    )
+
+    # has a tiny blob of label-6 overlap due to the L-ICA outlier
+    assert dice_coefficient_all_classes(
+        gt=gt, pred=pred, task=TASK.MULTICLASS_SEGMENTATION
+    ) == {
+        "1": {"label": "BA", "Dice": 0.0},
+        "2": {"label": "R-PCA", "Dice": 0.0},
+        "3": {"label": "L-PCA", "Dice": 0.0},
+        "4": {"label": "R-ICA", "Dice": 0.0},
+        "5": {"label": "R-MCA", "Dice": 0},
+        "6": {"label": "L-ICA", "Dice": 0.005530520278574354},
+        "7": {"label": "L-MCA", "Dice": 0},
+        "8": {"label": "R-Pcom", "Dice": 0},
+        "10": {"label": "Acom", "Dice": 0},
+        "11": {"label": "R-ACA", "Dice": 0},
+        "12": {"label": "L-ACA", "Dice": 0},
+        "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0.0005027745707794867},
+        "MergedBin": {"label": "MergedBin", "Dice": 0.025192476366825846},
     }

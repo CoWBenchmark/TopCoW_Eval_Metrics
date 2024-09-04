@@ -28,16 +28,19 @@ from topcow24_eval.utils.utils_mask import (
 )
 from topcow24_eval.utils.utils_neighborhood import get_label_neighbors
 
+from .check_LR_flip import check_LR_flip
+
 
 def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
     """
     #7 metric in Task-1-CoW-Segmentation.
-    For labels in anterior/posterior graphs, the predicted
-    segmentation needs to have
+    For labels in anterior/posterior graphs,
+    the predicted segmentation needs to fulfill
         1) Correct detection as in TP or TN
         2) Correct neighbourhood connectivity
             (connected to correct vessel classes)
         3) No 0-th Betti number errors
+        4) Not left-right flipped
 
     This metric is a more advanced
     and stringent metric than detection (metric #5)
@@ -86,6 +89,7 @@ def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
                     "neighbors": [2, 7],
                 },
                 ...
+                "LR_flipped": True,
             },
             "posterior": {
                 ...
@@ -230,6 +234,8 @@ def populate_topo_dict(
         if for GT: get its b0 and neighbors
         if for Pred: get its detection, b0, neighbors
 
+    if for Pred, then also add check_LR_flip
+
     example gt_topo_dict after processing anterior:
     {
         "Acom": {"b0": 1, "neighbors": [11, 12]},
@@ -243,6 +249,7 @@ def populate_topo_dict(
         "R-ACA": {"detection": "TP", "b0": 1, "neighbors": [4, 10]},
         "L-ACA": {"detection": "TP", "b0": 1, "neighbors": [10]},
         "3rd-A2": {"detection": "TN", "b0": 0, "neighbors": []},
+        "LR_flipped": True,
     }
     """
     if gt is not None or pred is not None:
@@ -278,6 +285,19 @@ def populate_topo_dict(
         label_topo["b0"] = int(b0)
         label_topo["neighbors"] = neighbors
 
+    if for_pred:
+        # check if left right flipped with check_LR_flip
+
+        if labels == ANTERIOR_LABELS:
+            region = "anterior"
+        else:
+            region = "posterior"
+
+        LR_flipped = check_LR_flip(pred, region)
+
+        # add to topo_dict
+        topo_dict["LR_flipped"] = LR_flipped
+
     print("\nAfter mutation by populate_topo_dict():")
     pprint.pprint(topo_dict, sort_dicts=False)
 
@@ -292,8 +312,9 @@ def compare_topo_dict(gt_topo, pred_topo, labels) -> bool:
 
     compares for
         1) if detection is only TP or TN
-        2) if b0 is the same
-        3) if neighbors are the same
+        2) if neighbors are the same
+        3) if b0 is the same
+        4) if LR_flipped
 
     Returns
         True if topology is matched
@@ -301,7 +322,7 @@ def compare_topo_dict(gt_topo, pred_topo, labels) -> bool:
     print("\ncompare_topo_dict()\n")
 
     # see if any criteria is broken
-    topo_match = True
+    # fail early and return False whenever possible
 
     for label in labels:
         gt_label_topo = gt_topo[MUL_CLASS_LABEL_MAP[str(label)]]
@@ -314,8 +335,7 @@ def compare_topo_dict(gt_topo, pred_topo, labels) -> bool:
 
         if pred_detection not in (DETECTION.TP.value, DETECTION.TN.value):
             print("[X] detection not matched")
-            topo_match = False
-            break
+            return False
 
         # 2) Correct neighbourhood connectivity
         #     (connected to correct vessel classes)
@@ -324,8 +344,7 @@ def compare_topo_dict(gt_topo, pred_topo, labels) -> bool:
 
         if gt_neighbors != pred_neighbors:
             print("[X] neighbors not matched")
-            topo_match = False
-            break
+            return False
 
         # 3) No 0-th Betti number errors
         gt_b0 = gt_label_topo["b0"]
@@ -333,10 +352,15 @@ def compare_topo_dict(gt_topo, pred_topo, labels) -> bool:
 
         if gt_b0 != pred_b0:
             print("[X] b0 not matched")
-            topo_match = False
-            break
+            return False
+
+    # 4) Not left-right flipped
+    # check pred_topo
+    if pred_topo["LR_flipped"]:
+        print("[X] LR flipped")
+        return False
 
     # only then is topology matched :)
 
-    print("topo_match = ", topo_match)
-    return topo_match
+    print("topo_matched =D")
+    return True
