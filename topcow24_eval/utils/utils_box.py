@@ -26,3 +26,15 @@ def parse_roi_txt(roi_txt):
     print("--- EOF roi_txt ---")
 
     return ([int(x) for x in size_arr], [int(x) for x in location_arr])
+
+
+def get_end_index(start_index, dim_size):
+    """
+    # x_end = x_start + x_size - 1
+
+    returns the end_index of the slice
+
+    E.g. [ABCDE], start_index = 1, size = 2
+    end slice is C, end_index = 1+2-1 = 2 (index of C)
+    """
+    return int(start_index + dim_size - 1)

@@ -6,7 +6,6 @@ Metrics for Task-1-CoW-Segmentation
 
 import pprint
 from enum import Enum
-from typing import Dict, List, Tuple
 
 import numpy as np
 import SimpleITK as sitk
@@ -17,7 +16,7 @@ from topcow24_eval.metrics.seg_metrics.generate_cls_avg_dict import (
 from topcow24_eval.utils.utils_mask import arr_is_binary
 
 
-def connected_components(img: np.array) -> Tuple[int, List, List]:
+def connected_components(img: np.array) -> tuple[int, list, list]:
     """
     identify connected components
     calculates the Betti number B0 for a binary 3D img
@@ -121,7 +120,7 @@ def betti_number_error_single_label(
 
 def betti_number_error_all_classes(
     *, gt: sitk.Image, pred: sitk.Image, task: Enum
-) -> Dict:
+) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with betti_number_error_single_label() as metric_func

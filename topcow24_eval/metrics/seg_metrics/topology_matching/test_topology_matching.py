@@ -1,3 +1,7 @@
+"""
+run the tests with pytest
+"""
+
 from pathlib import Path
 
 import numpy as np
@@ -6,6 +10,17 @@ from topcow24_eval.constants import ANTERIOR_LABELS, POSTERIOR_LABELS
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 from .topology_matching import compare_topo_dict, populate_topo_dict, topology_matching
+
+##############################################################
+#   ________________________________
+# < 7. Tests for topology matching >
+#   --------------------------------
+#          \   ^__^
+#           \  (oo)\_______
+#              (__)\       )\/\\
+#                  ||----w |
+#                  ||     ||
+##############################################################
 
 TESTDIR = Path("test_assets/seg_metrics/topcow_roi")
 

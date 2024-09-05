@@ -6,14 +6,13 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from typing import Dict
 
 import SimpleITK as sitk
 
 from .generate_edgelist import generate_edgelist
 
 
-def graph_classification(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
+def graph_classification(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     Classify the segmentation mask according to graphs
     based on the edge lists

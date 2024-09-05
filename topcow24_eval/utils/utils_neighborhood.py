@@ -9,8 +9,6 @@ NOTE: N26_utils assumes the img to be padded,
         otherwise border voxels will not have 26 neighbors for stats
 """
 
-from typing import List
-
 import numpy as np
 from topcow24_eval.utils.utils_mask import extract_labels
 
@@ -150,7 +148,7 @@ def get_region_N26_stats(region, padded):
     return N26_stats
 
 
-def get_label_neighbors(label_props, padded) -> List[int]:
+def get_label_neighbors(label_props, padded) -> list[int]:
     """
     get the neighboring labels for a label's regionprops
 

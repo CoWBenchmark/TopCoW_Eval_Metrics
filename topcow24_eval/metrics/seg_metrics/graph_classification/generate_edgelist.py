@@ -26,8 +26,6 @@ vector of length 4
 (do not analyze for A2, P2, or BA)
 """
 
-from typing import List
-
 import numpy as np
 from topcow24_eval.constants import MUL_CLASS_LABEL_MAP
 from topcow24_eval.utils.utils_mask import extract_labels, get_label_by_name
@@ -35,7 +33,7 @@ from topcow24_eval.utils.utils_mask import extract_labels, get_label_by_name
 from .edge_criteria import has_A1, has_P1
 
 
-def generate_edgelist(mask_arr: np.array) -> List:
+def generate_edgelist(mask_arr: np.array) -> list:
     """
     generate edge list of two (1,4) vectors
 

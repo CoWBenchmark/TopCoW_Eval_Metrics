@@ -69,6 +69,62 @@ def test_dice_coefficient_single_label_blank_slices():
     assert label_9_dice == 0.19999999999999998  # dice = 2/10 for label-9
 
 
+def test_dice_coefficient_single_label_3D_voxel_spacing():
+    """
+    with simple 3x3x3 sitk.Image, test that
+    dice_coefficient_single_label calculation DONT use spacing information
+    """
+    label = 42
+
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+
+    image1[0, :, :] = label
+
+    image2[:, 2, :] = label
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    # without SetSpacing
+    without_spacing = dice_coefficient_single_label(
+        gt=image1,
+        pred=image2,
+        label=label,
+    )
+    # w/o spacing, DSC = 0.33
+    assert round(without_spacing, 5) == round((2 * 3) / (9 + 9), 5)
+
+    # Set Spacing
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    # image1 and image2 even have different spacings!
+    image1.SetSpacing((1, 3, 5))
+    image2.SetSpacing((3, 7, 9))
+
+    image1[0, :, :] = label
+
+    image2[:, 2, :] = label
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    with_spacing = dice_coefficient_single_label(
+        gt=image1,
+        pred=image2,
+        label=label,
+    )
+    # NOTE: with spacing, even different spacings!
+    # DSC is still 0.33
+    assert with_spacing == without_spacing
+
+
 def test_DiceCoefficient_2D_different_dim():
     """
     img shape 6x3 and shape 5x5 should not be able to run

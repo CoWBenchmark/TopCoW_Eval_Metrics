@@ -159,6 +159,62 @@ def test_iou_single_label_blank_slices():
     assert iou == 0
 
 
+def test_iou_coefficient_single_label_3D_voxel_spacing():
+    """
+    with simple 3x3x3 sitk.Image, test that
+    iou_single_label calculation DONT use spacing information
+    """
+    label = 42
+
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+
+    image1[0, :, :] = label
+
+    image2[:, 2, :] = label
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    # without SetSpacing
+    without_spacing = iou_single_label(
+        gt=image1,
+        pred=image2,
+        label=label,
+    )
+    # w/o spacing, IoU = 0.2
+    assert without_spacing == 3 / (9 + 6)
+
+    # Set Spacing
+    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
+    # image1 and image2 even have different spacings!
+    image1.SetSpacing((1, 3, 5))
+    image2.SetSpacing((3, 7, 9))
+
+    image1[0, :, :] = label
+
+    image2[:, 2, :] = label
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    print("image2:")
+    print(sitk.GetArrayViewFromImage(image2))
+
+    with_spacing = iou_single_label(
+        gt=image1,
+        pred=image2,
+        label=label,
+    )
+    # NOTE: with spacing, even different spacings!
+    # IoU is still 0.2
+    assert with_spacing == without_spacing
+
+
 ###########################################################
 # tests for detection_single_label()
 

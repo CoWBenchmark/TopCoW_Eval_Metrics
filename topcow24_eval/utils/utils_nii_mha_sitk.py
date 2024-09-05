@@ -3,9 +3,7 @@ utility functions to work with nibael, mha and SimpleITK
 """
 
 import os
-from typing import Tuple
 
-import nibabel as nib
 import numpy as np
 import SimpleITK as sitk
 
@@ -21,25 +19,9 @@ def convert_mha_nii(img_path, file_ending, save_path="."):
     sitk.WriteImage(img, os.path.join(save_path, target_fname), useCompression=True)
 
 
-def make_dummy_mask(filename, shape=(3, 3, 3)):
-    """
-    save a dummy mask of all zeros in nii.gz format
-    see https://nipy.org/nibabel/gettingstarted.html
-    """
-    mask = np.zeros(shape, dtype=np.uint8)
-
-    print(f"mask.shape = {mask.shape}")
-
-    img = nib.Nifti1Image(mask, affine=np.eye(4))
-    img.to_filename(f"{filename}.nii.gz")
-
-    # DONE!
-    print(f"{filename}.nii.gz SAVED!\n")
-
-
 def load_image_and_array_as_uint8(
     path, log_sitk_attr=False
-) -> Tuple[sitk.Image, np.ndarray]:
+) -> tuple[sitk.Image, np.ndarray]:
     """
     Loads segmentation image (nifti or mha) from path,
     cast it to uint8 and returns the SimpleITK.Image and np array
@@ -85,9 +67,3 @@ def access_sitk_attr(image: sitk.Image):
     for key in image.GetMetaDataKeys():
         print('"{0}":"{1}"'.format(key, image.GetMetaData(key)))
     print("##############################################")
-
-
-if __name__ == "__main__":
-    make_dummy_mask("shape_5x5_2D", (5, 5, 1))
-    make_dummy_mask("shape_6x3_2D", (6, 3, 1))
-    print("utils.")

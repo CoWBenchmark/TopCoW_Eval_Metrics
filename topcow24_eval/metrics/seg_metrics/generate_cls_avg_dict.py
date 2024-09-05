@@ -6,7 +6,7 @@ Metrics for Task-1-CoW-Segmentation
 
 import pprint
 from enum import Enum
-from typing import Callable, Dict, List
+from typing import Callable
 
 import numpy as np
 import SimpleITK as sitk
@@ -23,9 +23,9 @@ def generate_cls_avg_dict(
     gt: sitk.Image,
     pred: sitk.Image,
     task: Enum,
-    metric_keys: List[str],
+    metric_keys: list[str],
     metric_func: Callable,
-) -> Dict:
+) -> dict:
     """
     Parameters:
         gt:
@@ -205,7 +205,9 @@ def generate_cls_avg_dict(
     return cls_avg_dict
 
 
-def update_cls_avg_dict(cls_avg_dict, label, label_map, metric_keys, metric_scores):
+def update_cls_avg_dict(
+    cls_avg_dict, label, label_map, metric_keys, metric_scores
+) -> None:
     """
     under a label or some class-average string,
     for each metric_key in metric_keys,

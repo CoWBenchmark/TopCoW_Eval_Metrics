@@ -6,7 +6,6 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from typing import Dict
 
 import numpy as np
 import SimpleITK as sitk
@@ -20,7 +19,17 @@ from topcow24_eval.utils.utils_mask import extract_labels
 
 
 def iou_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> float:
-    """use overlap measures filter with a single label"""
+    """
+    use overlap measures filter with a single label
+    for Intersection over Union (IoU) or Jaccard Coefficient
+
+    NOTE: IoU in sitk.LabelOverlapMeasuresImageFilter
+    does NOT use voxel spacing. It calculates the count
+    of voxels without considering the area/volume.
+
+    NOTE: two sitk.Images with DIFFERENT voxel spacings
+    can still be calculated for overlap measures...(?!)
+    """
     print(f"\n\tfor label-{label}")
 
     # Check if label exists for both gt and pred
@@ -108,7 +117,7 @@ def detection_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> s
     return detection
 
 
-def detection_grp2_labels(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
+def detection_grp2_labels(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     for Group 2 CoW component labels
     regardless of presence in gt or pred,

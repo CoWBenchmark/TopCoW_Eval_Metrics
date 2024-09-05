@@ -6,7 +6,6 @@ Metrics for Task-1-CoW-Segmentation
 
 import pprint
 from enum import Enum
-from typing import Dict
 
 import numpy as np
 import SimpleITK as sitk
@@ -16,7 +15,17 @@ from generate_cls_avg_dict import generate_cls_avg_dict
 def dice_coefficient_single_label(
     *, gt: sitk.Image, pred: sitk.Image, label: int
 ) -> float:
-    """use overlap measures filter with a single label"""
+    """
+    use overlap measures filter with a single label
+    for Dice Similarity Coefficient (DSC)
+
+    NOTE: DSC in sitk.LabelOverlapMeasuresImageFilter
+    does NOT use voxel spacing. It calculates the count
+    of voxels without considering the area/volume.
+
+    NOTE: two sitk.Images with DIFFERENT voxel spacings
+    can still be calculated for overlap measures...(?!)
+    """
     print(f"\nfor label-{label}")
 
     # Check if label exists for both gt and pred
@@ -46,7 +55,7 @@ def dice_coefficient_single_label(
 
 def dice_coefficient_all_classes(
     *, gt: sitk.Image, pred: sitk.Image, task: Enum
-) -> Dict:
+) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with dice_coefficient_single_label() as metric_func

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -8,7 +8,7 @@ def convert_multiclass_to_binary(array: np.array) -> np.array:
     return np.where(array > 0, True, False)
 
 
-def extract_labels(array1: np.array, array2: Optional[np.array] = None) -> List[int]:
+def extract_labels(array1: np.array, array2: Optional[np.array] = None) -> list[int]:
     """
     Extracts unique sorted labels from array input(s)
     if two arrays (such as gt and pred arrays) are input

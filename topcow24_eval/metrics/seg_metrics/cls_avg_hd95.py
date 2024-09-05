@@ -6,7 +6,6 @@ Metrics for Task-1-CoW-Segmentation
 
 import pprint
 from enum import Enum
-from typing import Dict, List, Tuple
 
 import numpy as np
 import SimpleITK as sitk
@@ -16,7 +15,7 @@ from topcow24_eval.constants import HD95_UPPER_BOUND
 from topcow24_eval.utils.utils_mask import arr_is_binary
 
 
-def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> List[float]:
+def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[float]:
     """
     Calculates the Hausdorff distance at 95% percentile
 
@@ -165,7 +164,7 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> List[f
     return [hd95_score, hd100_score]
 
 
-def _get_surface_distance(seg: sitk.Image) -> Tuple[sitk.Image, sitk.Image, int]:
+def _get_surface_distance(seg: sitk.Image) -> tuple[sitk.Image, sitk.Image, int]:
     """
     Code adapted from:
         ITK Forum:
@@ -209,7 +208,7 @@ def _get_surface_distance(seg: sitk.Image) -> Tuple[sitk.Image, sitk.Image, int]
     return seg_distance_map, seg_surface, num_surface_pixels
 
 
-def hd95_all_classes(*, gt: sitk.Image, pred: sitk.Image, task: Enum) -> Dict:
+def hd95_all_classes(*, gt: sitk.Image, pred: sitk.Image, task: Enum) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with hd95_single_label() as metric_func

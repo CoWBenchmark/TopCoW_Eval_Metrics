@@ -6,7 +6,7 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import SimpleITK as sitk
@@ -31,7 +31,7 @@ from topcow24_eval.utils.utils_neighborhood import get_label_neighbors
 from .check_LR_flip import check_LR_flip
 
 
-def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
+def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     #7 metric in Task-1-CoW-Segmentation.
     For labels in anterior/posterior graphs,
@@ -219,8 +219,8 @@ def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> Dict:
 
 def populate_topo_dict(
     *,
-    labels: Tuple,
-    topo_dict: Dict,
+    labels: tuple,
+    topo_dict: dict,
     padded: np.array,
     gt: Optional[sitk.Image] = None,
     pred: Optional[sitk.Image] = None,
