@@ -1,15 +1,9 @@
-"""
-Boundary intersection over union (Boundary IoU)
-
-Metrics for Task-2-CoW-ObjDet
-"""
-
 import math
 
 from topcow24_eval.utils.utils_box import get_end_index
 
 
-def get_boundary_points_with_distances(
+def boundary_points_with_distances(
     size_arr: list, location_arr: list, distance_arr: list
 ) -> set:
     """
@@ -37,6 +31,7 @@ def get_boundary_points_with_distances(
 
     # boundary distances for x,y,z dimension
     dist_x, dist_y, dist_z = distance_arr
+    print(f"dist_x={dist_x}, dist_y={dist_y}, dist_z={dist_z}")
     assert dist_x * dist_y * dist_z > 0, "distance must be positive"
 
     # each distance should not be more than ceil(half of the size)
@@ -88,6 +83,7 @@ def get_boundary_points_with_distances(
                 boundary_points.add((x, y_max - i, z))
 
     # display a sorted list for debugging
-    print(f"\nsorted(boundary_points):\n{sorted(boundary_points)}\n")
+    print(f"\nsorted(boundary_points):\n{sorted(boundary_points)}")
+    print(f"# boundary_points = {len(boundary_points)}\n")
 
     return boundary_points

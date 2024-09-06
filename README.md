@@ -11,12 +11,7 @@ To setup and install `topcow24_eval` package:
 
 ```sh
 # from topcow24_eval root
-
-# use py3.10
-python3.10 -m venv env_py310
-source env_py310/bin/activate
-
-pip install -e ".[dev]"
+bash ./setup.sh
 ```
 
 ### Segmentation metrics
@@ -42,8 +37,10 @@ Seven evaluation metrics with equal weights for multi-class (CoW anatomical vess
 
 ### Bounding box metrics
 
+In [`topcow24_eval/metrics/box_metrics/`](./topcow24_eval/metrics/box_metrics/), you will find our implementations for evaluating bounding box predictions.
+
 1. Boundary Intersection over Union (IoU):
-    * [`boundary_iou.py`](./topcow24_eval/metrics/box_metrics/boundary_iou.py) (_WIP_)
+    * [`iou_dict_from_files.py`](./topcow24_eval/metrics/box_metrics/iou_dict_from_files.py)
 
 ### Graph Classification metrics
 
@@ -71,7 +68,7 @@ The files with names that follow the form `test_*.py` contain the test cases for
 * topology matching:
     * [`test_topology_matching.py`](./topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py)
 * boundary IoU:
-    * [`test_boundary_iou.py`](./topcow24_eval/metrics/box_metrics/test_boundary_iou.py)
+    * [`test_iou_dict_from_files.py`](./topcow24_eval/metrics/box_metrics/test_iou_dict_from_files.py)
 
 Test asset files used in the test cases are stored in the folder [`test_assets/`](./test_assets/).
 
@@ -81,21 +78,23 @@ Simply invoke the tests by `pytest .`:
 # simply run pytest
 $ pytest .
 
-topcow24_eval/metrics/box_metrics/test_boundary_iou.py .....                                                                                 [  5%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_edge_criteria.py ..                                                              [  7%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_generate_edgelist.py ...                                                         [ 10%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py .                                                        [ 11%]
-topcow24_eval/metrics/seg_metrics/test_clDice.py ....                                                                                        [ 15%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py ................                                                                        [ 32%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py ..............                                                                        [ 46%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py .............                                                                         [ 60%]
-topcow24_eval/metrics/seg_metrics/test_detection_grp2_labels.py ........                                                                     [ 68%]
-topcow24_eval/metrics/seg_metrics/test_generate_cls_avg_dict.py ...........                                                                  [ 80%]
-topcow24_eval/metrics/seg_metrics/topology_matching/test_check_LR_flip.py ..                                                                 [ 82%]
-topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py ........                                                       [ 90%]
-topcow24_eval/utils/test_utils_box.py ..                                                                                                     [ 92%]
-topcow24_eval/utils/test_utils_mask.py .....                                                                                                 [ 97%]
+topcow24_eval/metrics/box_metrics/test_boundary_iou_from_tuple.py ...........                                                                [  9%]
+topcow24_eval/metrics/box_metrics/test_boundary_points_with_distances.py .....                                                               [ 14%]
+topcow24_eval/metrics/box_metrics/test_iou_dict_from_files.py ....                                                                           [ 17%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_edge_criteria.py ..                                                              [ 19%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_generate_edgelist.py ...                                                         [ 22%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py .                                                        [ 23%]
+topcow24_eval/metrics/seg_metrics/test_clDice.py ....                                                                                        [ 26%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py ................                                                                        [ 41%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py ..............                                                                        [ 53%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py .............                                                                         [ 65%]
+topcow24_eval/metrics/seg_metrics/test_detection_grp2_labels.py ........                                                                     [ 72%]
+topcow24_eval/metrics/seg_metrics/test_generate_cls_avg_dict.py ...........                                                                  [ 82%]
+topcow24_eval/metrics/seg_metrics/topology_matching/test_check_LR_flip.py ..                                                                 [ 83%]
+topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py ........                                                       [ 91%]
+topcow24_eval/utils/test_utils_box.py ...                                                                                                    [ 93%]
+topcow24_eval/utils/test_utils_mask.py .....                                                                                                 [ 98%]
 topcow24_eval/utils/test_utils_neighborhood.py ..                                                                                            [100%]
 
-========================================================== 96 passed, 7 warnings in 9.60s ==========================================================
+========================================================= 112 passed, 15 warnings in 9.61s =========================================================
 ```

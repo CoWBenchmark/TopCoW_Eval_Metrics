@@ -65,3 +65,10 @@ class DETECTION(Enum):
 ANTERIOR_LABELS = (10, 11, 12, 15)
 # Posterior CoW components
 POSTERIOR_LABELS = (2, 3, 8, 9)
+
+
+# boundary distance is a fixed ratio of each X,Y,Z size
+BOUNDARY_DISTANCE_RATIO = 0.2
+# NOTE: for a boundary_distance_ratio of 50%,
+# boundary_iou is just standard IoU
+MAX_DISTANCE_RATIO = 0.5

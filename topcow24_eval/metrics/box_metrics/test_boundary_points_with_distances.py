@@ -1,23 +1,12 @@
-"""
-run the tests with pytest
-"""
-
 import pytest
-from boundary_iou import get_boundary_points_with_distances
+
+from .boundary_points_with_distances import boundary_points_with_distances
 
 ##############################################################
-#   ________________________________
-# < 8. Tests for boundary IoU >
-#   --------------------------------
-#          \   ^__^
-#           \  (oo)\_______
-#              (__)\       )\/\\
-#                  ||----w |
-#                  ||     ||
-##############################################################
+## tests for boundary_points_with_distances()
 
 
-def test_get_boundary_points_with_distances_tiny_box_surface():
+def test_boundary_points_with_distances_tiny_box_surface():
     """
     tiny bounding box with size_arr = [1, 2, 3]
     starting at origin,
@@ -27,7 +16,7 @@ def test_get_boundary_points_with_distances_tiny_box_surface():
     size_arr = [1, 2, 3]
     location_arr = [0, 0, 0]
     distance_arr = [1, 1, 1]
-    boundary_points = get_boundary_points_with_distances(
+    boundary_points = boundary_points_with_distances(
         size_arr, location_arr, distance_arr
     )
     # all 6 points of the box are included
@@ -44,15 +33,15 @@ def test_get_boundary_points_with_distances_tiny_box_surface():
     # should raise distance too big error
 
     with pytest.raises(AssertionError) as e_info:
-        get_boundary_points_with_distances(size_arr, location_arr, [2, 1, 1])
+        boundary_points_with_distances(size_arr, location_arr, [2, 1, 1])
     assert str(e_info.value) == "distance X too big"
 
     with pytest.raises(AssertionError) as e_info:
-        get_boundary_points_with_distances(size_arr, location_arr, [1, 2, 1])
+        boundary_points_with_distances(size_arr, location_arr, [1, 2, 1])
     assert str(e_info.value) == "distance Y too big"
 
     # Size-Z is 3, so distance-Z of 2 is still okay!
-    assert boundary_points == get_boundary_points_with_distances(
+    assert boundary_points == boundary_points_with_distances(
         size_arr,
         location_arr,
         [1, 1, 2],
@@ -60,11 +49,11 @@ def test_get_boundary_points_with_distances_tiny_box_surface():
 
     # but distance-Z of 3 will trigger error!
     with pytest.raises(AssertionError) as e_info:
-        get_boundary_points_with_distances(size_arr, location_arr, [1, 1, 3])
+        boundary_points_with_distances(size_arr, location_arr, [1, 1, 3])
     assert str(e_info.value) == "distance Z too big"
 
 
-def test_get_boundary_points_with_distances_small_box_surface():
+def test_boundary_points_with_distances_small_box_surface():
     """
     small (bigger than tiny) bounding box with size_arr = [3, 3, 4]
     starting at origin,
@@ -74,7 +63,7 @@ def test_get_boundary_points_with_distances_small_box_surface():
     size_arr = [3, 3, 4]
     location_arr = [0, 0, 0]
     distance_arr = [1, 1, 1]
-    boundary_points = get_boundary_points_with_distances(
+    boundary_points = boundary_points_with_distances(
         size_arr, location_arr, distance_arr
     )
     # all points of the box, except the center 2, are included
@@ -118,7 +107,7 @@ def test_get_boundary_points_with_distances_small_box_surface():
     }
 
 
-def test_get_boundary_points_with_distances_small_box_D111():
+def test_boundary_points_with_distances_small_box_D111():
     """
     small (bigger than tiny) bounding box with size_arr = [5, 5, 3]
     starting at (3,2,0),
@@ -129,7 +118,7 @@ def test_get_boundary_points_with_distances_small_box_D111():
     size_arr = [5, 5, 3]
     location_arr = [3, 2, 0]
     distance_arr = [1, 1, 1]
-    boundary_points = get_boundary_points_with_distances(
+    boundary_points = boundary_points_with_distances(
         size_arr, location_arr, distance_arr
     )
     # all points of the box, except the middle 9, are included
@@ -212,9 +201,9 @@ def test_get_boundary_points_with_distances_small_box_D111():
     }
 
 
-def test_get_boundary_points_with_distances_small_box_D121():
+def test_boundary_points_with_distances_small_box_D121():
     """
-    same as test_get_boundary_points_with_distances_small_box_D111()
+    same as test_boundary_points_with_distances_small_box_D111()
     but now:
         distances [1,2,1]
     d_y squeeze into the original 9 voxel middle plane,
@@ -223,7 +212,7 @@ def test_get_boundary_points_with_distances_small_box_D121():
     size_arr = [5, 5, 3]
     location_arr = [3, 2, 0]
     distance_arr = [1, 2, 1]
-    boundary_points = get_boundary_points_with_distances(
+    boundary_points = boundary_points_with_distances(
         size_arr, location_arr, distance_arr
     )
     # all points of the box, except the middle 3
@@ -307,9 +296,9 @@ def test_get_boundary_points_with_distances_small_box_D121():
     }
 
 
-def test_get_boundary_points_with_distances_small_box_D211():
+def test_boundary_points_with_distances_small_box_D211():
     """
-    same as test_get_boundary_points_with_distances_small_box_D121()
+    same as test_boundary_points_with_distances_small_box_D121()
     but now:
         distances [2,1,1]
     d_x squeeze into the original 9 voxel middle plane,
@@ -318,7 +307,7 @@ def test_get_boundary_points_with_distances_small_box_D211():
     size_arr = [5, 5, 3]
     location_arr = [3, 2, 0]
     distance_arr = [2, 1, 1]
-    boundary_points = get_boundary_points_with_distances(
+    boundary_points = boundary_points_with_distances(
         size_arr, location_arr, distance_arr
     )
     # all points of the box, except the middle 3
