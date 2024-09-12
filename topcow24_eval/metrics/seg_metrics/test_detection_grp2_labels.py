@@ -262,6 +262,11 @@ def test_detection_single_label_ThresholdIoU():
     detection = detection_single_label(gt=gt_img, pred=pred_img, label=label)
     assert detection == "FP"
 
+    # label-42 GT missing, Pred also missing -> TN
+    label = 42
+    detection = detection_single_label(gt=gt_img, pred=pred_img, label=label)
+    assert detection == "TN"
+
 
 ###########################################################
 # tests for detection_grp2_labels()

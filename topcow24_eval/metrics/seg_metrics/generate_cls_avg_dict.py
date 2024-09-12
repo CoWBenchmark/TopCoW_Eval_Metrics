@@ -13,7 +13,6 @@ import SimpleITK as sitk
 from topcow24_eval.constants import (
     BIN_CLASS_LABEL_MAP,
     MUL_CLASS_LABEL_MAP,
-    TASK,
 )
 from topcow24_eval.utils.utils_mask import extract_labels
 
@@ -33,7 +32,7 @@ def generate_cls_avg_dict(
         pred:
             prediction sitk.Image
         task:
-            If task is TASK.BINARY_SEGMENTATION,
+            [deprecated] If task is TASK.BINARY_SEGMENTATION,
                 it will compute the MergedBin score
             If task is TASK.MULTICLASS_SEGMENTATION, it will
                 compute metric scores for union of present classes
@@ -84,121 +83,95 @@ def generate_cls_avg_dict(
     # key in cls_avg_dict for class average
     cls_avg_keys = [f"ClsAvg{metric_key}" for metric_key in metric_keys]
 
-    if task == TASK.BINARY_SEGMENTATION:
-        # when there are no labels in the images, return blank cls_avg_dict
-        if len(labels) == 0:
-            update_cls_avg_dict(
-                cls_avg_dict=cls_avg_dict,
-                label=1,
-                label_map=BIN_CLASS_LABEL_MAP,
-                metric_keys=metric_keys,
-                metric_scores=[0] * len(metric_keys),
-            )
+    print("### Multiclass Segmentation ###")
 
-            print(f"\ncls_avg_dict = {cls_avg_dict}")
-            return cls_avg_dict
-
-        # otherwise compute the metric_score for binary CoW and update the cls_avg_dict
-
-        assert labels == [1], "Invalid binary segmentation"
-
-        metric_scores = metric_func(gt=gt, pred=pred, label=1)
-
-        update_cls_avg_dict(
-            cls_avg_dict=cls_avg_dict,
-            label=1,
-            label_map=BIN_CLASS_LABEL_MAP,
-            metric_keys=metric_keys,
-            metric_scores=metric_scores,
-        )
-
-        print(f"\ncls_avg_dict = {cls_avg_dict}")
-        return cls_avg_dict
-
-    else:
-        # when there are no labels in the images,
-        # return blank cls_avg_dict with only average and merged_binary of 0
-        if len(labels) == 0:
-            for cls_avg_key in cls_avg_keys:
-                # update each class average key to 0
-                update_cls_avg_dict(
-                    cls_avg_dict=cls_avg_dict,
-                    label=cls_avg_key,
-                    label_map=None,
-                    metric_keys=metric_keys,
-                    metric_scores=[0] * len(metric_keys),
-                )
-
-            # update merged binary class to 0
-            update_cls_avg_dict(
-                cls_avg_dict=cls_avg_dict,
-                # use the label_map for merged bin instead of "1"
-                label=BIN_CLASS_LABEL_MAP["1"],
-                label_map=None,
-                metric_keys=metric_keys,
-                metric_scores=[0] * len(metric_keys),
-            )
-
-            print(f"\ncls_avg_dict = {cls_avg_dict}")
-            return cls_avg_dict
-
-        # otherwise compute the metric_scores for
-        # all present labels and update the cls_avg_dict
-
-        sum_scores = np.zeros(len(metric_keys))
-
-        for voxel_label in labels:
-            # update the cls_avg_dict for that label
-            metric_scores = metric_func(gt=gt, pred=pred, label=voxel_label)
-
-            update_cls_avg_dict(
-                cls_avg_dict=cls_avg_dict,
-                label=voxel_label,
-                label_map=MUL_CLASS_LABEL_MAP,
-                metric_keys=metric_keys,
-                metric_scores=metric_scores,
-            )
-
-            # keep track of the sum of scores for average
-            sum_scores += np.array(metric_scores)
-
-        # get the average from sum_scores
-        # convert from np array to list
-        avg_scores = (sum_scores / len(labels)).tolist()
-
-        # update the class average keys
+    # when there are no labels in the images,
+    # return blank cls_avg_dict with only average and merged_binary of 0
+    if len(labels) == 0:
         for cls_avg_key in cls_avg_keys:
-            # update each class average key to avg_score
+            # update each class average key to 0
             update_cls_avg_dict(
-                cls_avg_dict,
+                cls_avg_dict=cls_avg_dict,
                 label=cls_avg_key,
                 label_map=None,
                 metric_keys=metric_keys,
-                metric_scores=avg_scores,
+                metric_scores=[0] * len(metric_keys),
             )
 
-        # multi-class segmentation is also automatically considered for binary task
-        # binary task score is done by binary-thresholding the sitk Image
-        gt_bin = sitk.BinaryThreshold(
-            gt,
-            lowerThreshold=1,
-        )
-        pred_bin = sitk.BinaryThreshold(
-            pred,
-            lowerThreshold=1,
-        )
-
-        metric_scores = metric_func(gt=gt_bin, pred=pred_bin, label=1)
-
-        # update merged binary class to metric_scores
+        # update merged binary class to 0
         update_cls_avg_dict(
             cls_avg_dict=cls_avg_dict,
             # use the label_map for merged bin instead of "1"
             label=BIN_CLASS_LABEL_MAP["1"],
             label_map=None,
             metric_keys=metric_keys,
+            metric_scores=[0] * len(metric_keys),
+        )
+
+        print(f"\ncls_avg_dict = {cls_avg_dict}")
+        return cls_avg_dict
+
+    # otherwise compute the metric_scores for
+    # all present labels and update the cls_avg_dict
+
+    print("### for all present labels ###")
+
+    sum_scores = np.zeros(len(metric_keys))
+
+    for voxel_label in labels:
+        # update the cls_avg_dict for that label
+        metric_scores = metric_func(gt=gt, pred=pred, label=voxel_label)
+
+        update_cls_avg_dict(
+            cls_avg_dict=cls_avg_dict,
+            label=voxel_label,
+            label_map=MUL_CLASS_LABEL_MAP,
+            metric_keys=metric_keys,
             metric_scores=metric_scores,
         )
+
+        # keep track of the sum of scores for average
+        sum_scores += np.array(metric_scores)
+
+    # get the average from sum_scores
+    # convert from np array to list
+    avg_scores = (sum_scores / len(labels)).tolist()
+
+    # update the class average keys
+    for cls_avg_key in cls_avg_keys:
+        # update each class average key to avg_score
+        update_cls_avg_dict(
+            cls_avg_dict,
+            label=cls_avg_key,
+            label_map=None,
+            metric_keys=metric_keys,
+            metric_scores=avg_scores,
+        )
+
+    print("### for binary merged ###")
+
+    # binary segmentation is also automatically considered for multiclass task
+    # binary task score is done by binary-thresholding the sitk Image
+    gt_bin = sitk.BinaryThreshold(
+        gt,
+        lowerThreshold=1,
+    )
+    pred_bin = sitk.BinaryThreshold(
+        pred,
+        lowerThreshold=1,
+    )
+
+    metric_scores = metric_func(gt=gt_bin, pred=pred_bin, label=1)
+
+    # update merged binary class to metric_scores
+    update_cls_avg_dict(
+        cls_avg_dict=cls_avg_dict,
+        # use the label_map for merged bin instead of "1"
+        label=BIN_CLASS_LABEL_MAP["1"],
+        label_map=None,
+        metric_keys=metric_keys,
+        metric_scores=metric_scores,
+    )
 
     print("\ncls_avg_dict =")
     pprint.pprint(cls_avg_dict, sort_dicts=False)
@@ -263,6 +236,7 @@ def update_cls_avg_dict(
         if label_value.startswith("ClsAvg"):
             # for cls_avg_key str
             for_cls_avg = True
+            print("is for_cls_avg")
     else:
         # for voxel_label int
         # label is acquired from label_map
@@ -278,5 +252,34 @@ def update_cls_avg_dict(
         # when label is cls_avg_key string,
         # only update its corresponding metric_key
         if for_cls_avg and (label_value != f"ClsAvg{metric_key}"):
+            print(f"Skip {metric_key}")
             continue
         cls_avg_dict[str(label)][metric_key] = metric_scores[index]
+
+    print("\n::update_cls_avg_dict() DONE! ::\n")
+
+
+def update_metrics_dict(
+    *, cls_avg_dict: dict, metrics_dict: dict, key: str, metric_name: str
+):
+    """
+    to update the metrics_dict in evaluation.py:
+    concat the metric_name with the label's value
+    assign metric score to the concat_name in metrics_dict
+
+    key and metric_name must exist in the cls_avg_dict
+        - cls_avg_dict[key]["label"]
+        - cls_avg_dict[key][metric_name]
+
+    example update for label-22 and label-42:
+    cls_avg_dict = {
+        "22": {"label": "Catch", "Metric1": 314},
+        "42": {"label": "dolphin", "Metric1": 2024},
+    }
+    metrics_dict == {
+        "Metric1_Catch": 314,
+        "Metric1_dolphin": 2024,
+    }
+    """
+    concat_name = f"{metric_name}_" + cls_avg_dict[key]["label"]
+    metrics_dict[concat_name] = cls_avg_dict[key][metric_name]

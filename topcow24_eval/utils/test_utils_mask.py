@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import SimpleITK as sitk
 from topcow24_eval.constants import MUL_CLASS_LABEL_MAP
 from utils_mask import (
     arr_is_binary,
@@ -7,6 +8,7 @@ from utils_mask import (
     extract_labels,
     filter_mask_by_label,
     get_label_by_name,
+    pad_sitk_image,
 )
 
 
@@ -104,3 +106,67 @@ def test_arr_is_binary():
     # multiclass
     assert arr_is_binary(np.arange(6).reshape(3, 2)) is False
     assert arr_is_binary(np.arange(6).reshape(3, 2).astype(bool)) is True
+
+
+######
+# pad SimpleITK image
+def test_pad_sitk_image():
+    # a 2D example
+    img_2D = sitk.Image([2, 3], sitk.sitkUInt8)
+    img_2D = sitk.Add(img_2D, 1)  # Fill with 1s
+
+    padded_2D = pad_sitk_image(img_2D)
+
+    assert np.array_equal(
+        sitk.GetArrayFromImage(padded_2D),
+        np.array(
+            [
+                [0, 0, 0, 0],
+                [0, 1, 1, 0],
+                [0, 1, 1, 0],
+                [0, 1, 1, 0],
+                [0, 0, 0, 0],
+            ]
+        ),
+    )
+    print("original: ", sitk.GetArrayFromImage(img_2D))
+
+    # a 3D example
+    image1 = sitk.Image([2, 2, 2], sitk.sitkUInt8)
+    # Fill with 42s
+    image1[:, :, :] = 42
+
+    padded = pad_sitk_image(image1)
+
+    assert np.array_equal(
+        sitk.GetArrayFromImage(padded),
+        np.array(
+            [
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+                [
+                    [0, 0, 0, 0],
+                    [0, 42, 42, 0],
+                    [0, 42, 42, 0],
+                    [0, 0, 0, 0],
+                ],
+                [
+                    [0, 0, 0, 0],
+                    [0, 42, 42, 0],
+                    [0, 42, 42, 0],
+                    [0, 0, 0, 0],
+                ],
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+            ]
+        ),
+    )
+    print("original: ", sitk.GetArrayFromImage(image1))

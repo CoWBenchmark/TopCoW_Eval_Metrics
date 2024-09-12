@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import SimpleITK as sitk
 from cls_avg_dice import dice_coefficient_all_classes, dice_coefficient_single_label
-from topcow24_eval.constants import BIN_CLASS_LABEL_MAP, MUL_CLASS_LABEL_MAP, TASK
+from topcow24_eval.constants import MUL_CLASS_LABEL_MAP, TASK
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 ##############################################################
@@ -137,7 +137,7 @@ def test_DiceCoefficient_2D_different_dim():
 
     with pytest.raises(AssertionError) as e_info:
         dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
+            gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
         )
     assert str(e_info.value) == "gt pred not matching shapes!"
 
@@ -151,14 +151,6 @@ def test_DiceCoefficient_2D_binary():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-    )
-
-    assert dice_dict["1"]["label"] == BIN_CLASS_LABEL_MAP["1"]
-    assert math.isclose(dice_dict["1"]["Dice"], (2 * 4) / (9 + 8))
-    # ~= 0.47058
 
     # multi-class segmentation task is also applicable
     # NOTE: but the label should now be BA instead of CoW
@@ -181,14 +173,6 @@ def test_DiceCoefficient_2D_onlyLabel5():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    # binary seg task should be invalid for this test!
-    # even though it only has one label class of 5
-    with pytest.raises(AssertionError) as e_info:
-        dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
 
     # this test should only work for multiclass task even though it only has one label
     dice_dict = dice_coefficient_all_classes(
@@ -241,14 +225,6 @@ def test_DiceCoefficient_2D_multiclass():
     assert math.isclose(dice_dict["MergedBin"]["Dice"], (2 * 15) / (24 + 16))
     # = 0.75
 
-    # binary seg task should be invalid for this test!
-    # because there are two classes
-    with pytest.raises(AssertionError) as e_info:
-        dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
-
 
 def test_DiceCoefficient_2D_nonOverlapped_multiclass():
     """
@@ -276,39 +252,8 @@ def test_DiceCoefficient_2D_nonOverlapped_multiclass():
     }
 
 
-def test_DiceCoefficient_2D_nolabels_task_binary():
-    """
-    what if there is no labels in both gt and pred? -> cow=0
-    what if there is no labels in gt? -> cow=0
-    """
-    # mimic no labels in both gt and pred by reusing a clean slate
-    gt_path = TESTDIR_2D / "shape_6x3_2D.nii.gz"
-
-    gt_img, _ = load_image_and_array_as_uint8(gt_path)
-
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=gt_img, task=TASK.BINARY_SEGMENTATION
-    )
-
-    assert dice_dict == {"1": {"label": "MergedBin", "Dice": 0}}
-
-    # gt is clean slate, but pred has some predictions
-    pred_path = TESTDIR_2D / "shape_6x3_2D_clDice_elong_pred.nii.gz"
-
-    gt_img, _ = load_image_and_array_as_uint8(gt_path)
-    pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-    )
-
-    assert dice_dict == {"1": {"label": "MergedBin", "Dice": 0}}
-
-
 def test_DiceCoefficient_2D_nolabels_task_multiclass():
     """
-    same as test_DiceCoefficient_2D_nolabels_binary but for multiclass
-
     what if there is no labels in both gt and pred? -> avg=0, cow=0
     what if there is no labels in gt? -> avg=0, cow=0
     """
@@ -323,6 +268,7 @@ def test_DiceCoefficient_2D_nolabels_task_multiclass():
 
     assert dice_dict == {
         "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0},
+        # there is an automatic conversion from multi-class to binary
         "MergedBin": {"label": "MergedBin", "Dice": 0},
     }
 
@@ -391,14 +337,6 @@ def test_dice_dict_e2e():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    # binary seg task should be invalid for this test!
-    # because there are 8 classes!
-    with pytest.raises(AssertionError) as e_info:
-        dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
-
     # multiclass seg task will give the following:
     # label 1, 3, 5, 7 have Dice of 1.0
     # label 2 middle 2x2x2 hollow:
@@ -438,14 +376,6 @@ def test_DiceCoefficient_2D_multiclass_MediumPost():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    # binary seg task should be invalid for this test!
-    # because there are 8 classes!
-    with pytest.raises(AssertionError) as e_info:
-        dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
 
     # multiclass seg task will give the following:
     # label 11:

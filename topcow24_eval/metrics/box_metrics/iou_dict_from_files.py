@@ -50,8 +50,8 @@ def iou_dict_from_files(
     first_box_path = Path(first_box_path)
     second_box_path = Path(second_box_path)
 
-    assert first_box_path.is_file(), "first_box_path don't exist!"
-    assert second_box_path.is_file(), "second_box_path don't exist!"
+    assert first_box_path.is_file(), "first_box_path doesn't exist!"
+    assert second_box_path.is_file(), "second_box_path doesn't exist!"
 
     if (
         first_box_path.suffix.lower() == ".txt"

@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+import SimpleITK as sitk
 
 
 def convert_multiclass_to_binary(array: np.array) -> np.array:
@@ -52,3 +53,25 @@ def arr_is_binary(arr: np.array) -> bool:
     NOTE: all zeros or all ones are also binary!
     """
     return set(np.unique(arr)).issubset({0, 1})
+
+
+def pad_sitk_image(image: sitk.Image) -> sitk.Image:
+    # print("\nbefore padding, image:\n")
+    # print(image.GetSize())
+    # print(sitk.GetArrayFromImage(image))
+
+    # Define the amount of padding to add to each side (x, y, z)
+    # https://itk.org/Doxygen/html/classitk_1_1PadImageFilter.html
+    dim = image.GetDimension()  # can be 2D or 3D
+    pad_lower_bound = [1] * dim  # Padding to add at the beginning of each axis
+    pad_upper_bound = [1] * dim  # Padding to add at the end of each axis
+
+    # Pad the image with 0s
+    constant = 0
+    padded_image = sitk.ConstantPad(image, pad_lower_bound, pad_upper_bound, constant)
+
+    # print("\nafter padding, padded_image:\n")
+    # print(padded_image.GetSize())
+    # print(sitk.GetArrayFromImage(padded_image))
+
+    return padded_image

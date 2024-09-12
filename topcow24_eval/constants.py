@@ -12,8 +12,12 @@ class TASK(Enum):
     for segmentation metrics only
     """
 
-    BINARY_SEGMENTATION = "binary"
-    MULTICLASS_SEGMENTATION = "multiclass"
+    # Task-1-CoW-Segmentation
+    MULTICLASS_SEGMENTATION = "multiclass_segmentation"
+    # Task-2-CoW-ObjDet
+    OBJECT_DETECTION = "object_detection"
+    # Task-3-CoW-Classification
+    GRAPH_CLASSIFICATION = "graph_classification"
 
 
 MUL_CLASS_LABEL_MAP = {

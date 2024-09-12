@@ -5,7 +5,6 @@ run the tests with pytest
 from pathlib import Path
 
 import numpy as np
-import pytest
 import SimpleITK as sitk
 from cls_avg_b0 import (
     betti_number_error_all_classes,
@@ -208,11 +207,6 @@ def test_singleBlob_noBorder_betti_num_err_dict():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    # label-1 for binary segmentation task is CoW
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-    ) == {"1": {"label": "MergedBin", "B0err": 0}}
-
     # label-1 for multiclass segmentation task is BA
     assert betti_number_error_all_classes(
         gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
@@ -347,14 +341,6 @@ def test_betti_num_err_dict_e2e():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    # binary seg task should be invalid for this test!
-    # because there are 8 classes!
-    with pytest.raises(AssertionError) as e_info:
-        betti_number_error_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-        )
-    assert str(e_info.value) == "Invalid binary segmentation"
-
     # multiclass seg task will give the following:
     # GT has B0=1, B1=0, B2=0 for all 8 labels and combined
     #
@@ -383,36 +369,8 @@ def test_betti_num_err_dict_e2e():
     }
 
 
-def test_bettiError_nolabels_binary():
-    """
-    what if there is no labels in both gt and pred? -> B0Err=0 B1Err=0
-    what if there is no labels in gt? -> depends on pred labels
-    """
-    # mimic no labels in both gt and pred by reusing a clean slate
-    gt_path = TESTDIR_2D / "shape_6x3_2D.nii.gz"
-
-    gt_img, _ = load_image_and_array_as_uint8(gt_path)
-
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=gt_img, task=TASK.BINARY_SEGMENTATION
-    ) == {"1": {"label": "MergedBin", "B0err": 0}}
-
-    # gt is clean slate, but pred has some predictions
-    gt_path = TESTDIR_2D / "shape_6x3_2D.nii.gz"
-    pred_path = TESTDIR_2D / "shape_6x3_2D_clDice_elong_pred.nii.gz"
-
-    gt_img, _ = load_image_and_array_as_uint8(gt_path)
-    pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION
-    ) == {"1": {"label": "MergedBin", "B0err": 1}}
-
-
 def test_bettiError_nolabels_multiclass():
     """
-    same as test_bettiError_nolabels_binary but for multiclass
-
     what if there is no labels in both gt and pred? -> B0err_average=0, CoW=0
     what if there is no labels in gt? -> depends on pred labels
     """

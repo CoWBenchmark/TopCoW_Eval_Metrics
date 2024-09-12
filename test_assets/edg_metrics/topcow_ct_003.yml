@@ -1,0 +1,10 @@
+anterior:
+    L-A1:    0
+    Acom:    1
+    3rd-A2:  0
+    R-A1:    1
+posterior:
+    L-Pcom:  1
+    L-P1:    1
+    R-P1:    1
+    R-Pcom:  1

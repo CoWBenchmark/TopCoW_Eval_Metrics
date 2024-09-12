@@ -9,7 +9,9 @@ from enum import Enum
 
 import numpy as np
 import SimpleITK as sitk
-from generate_cls_avg_dict import generate_cls_avg_dict
+from topcow24_eval.metrics.seg_metrics.generate_cls_avg_dict import (
+    generate_cls_avg_dict,
+)
 
 
 def dice_coefficient_single_label(

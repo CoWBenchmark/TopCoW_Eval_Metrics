@@ -33,7 +33,7 @@ from topcow24_eval.utils.utils_mask import extract_labels, get_label_by_name
 from .edge_criteria import has_A1, has_P1
 
 
-def generate_edgelist(mask_arr: np.array) -> list:
+def generate_edgelist(mask_arr: np.array) -> list[list[int], list[int]]:
     """
     generate edge list of two (1,4) vectors
 
@@ -41,9 +41,9 @@ def generate_edgelist(mask_arr: np.array) -> list:
         mask_arr: mask np.array
 
     Returns
-        List
+        [anterior, posterior] of list[list[int], list[int]]
     """
-    print("\ngenerate_edgelist()\n")
+    print("\ngenerate_edgelist()...\n")
 
     # get the unique labels
     unique_labels = extract_labels(mask_arr)
@@ -63,12 +63,14 @@ def generate_edgelist(mask_arr: np.array) -> list:
     label_R_PCA = get_label_by_name("R-PCA", MUL_CLASS_LABEL_MAP)
 
     # anterior
+    print("anterior edgelist...")
     L_A1 = label_L_ACA in unique_labels and has_A1(mask_arr, "L")
     Acom = label_Acom in unique_labels
     trd_A2 = label_trd_A2 in unique_labels
     R_A1 = label_R_ACA in unique_labels and has_A1(mask_arr, "R")
 
     # posterior
+    print("posterior edgelist...")
     L_Pcom = label_L_Pcom in unique_labels
     L_P1 = label_L_PCA in unique_labels and has_P1(mask_arr, "L")
     R_P1 = label_R_PCA in unique_labels and has_P1(mask_arr, "R")
@@ -79,5 +81,5 @@ def generate_edgelist(mask_arr: np.array) -> list:
 
     edgelist = [ant_list, pos_list]
 
-    print(f"\ngenerate_edgelist() => {edgelist}")
+    print(f"\ngenerate_edgelist() [ant_list, pos_list] => {edgelist}")
     return edgelist

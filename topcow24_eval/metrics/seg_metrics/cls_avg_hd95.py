@@ -9,10 +9,12 @@ from enum import Enum
 
 import numpy as np
 import SimpleITK as sitk
-from generate_cls_avg_dict import generate_cls_avg_dict
 from SimpleITK import GetArrayViewFromImage as ArrayView
 from topcow24_eval.constants import HD95_UPPER_BOUND
-from topcow24_eval.utils.utils_mask import arr_is_binary
+from topcow24_eval.metrics.seg_metrics.generate_cls_avg_dict import (
+    generate_cls_avg_dict,
+)
+from topcow24_eval.utils.utils_mask import arr_is_binary, pad_sitk_image
 
 
 def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[float]:
@@ -59,7 +61,11 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[f
         ITK forum:
             https://discourse.itk.org/t/computing-95-hausdorff-distance/3832
         ITK tutorial surface_hausdorff_distance:
-            http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/34_Segmentation_Evaluation.html
+            NOTE: use the latest InsightSoftwareConsortium/SimpleITK-Notebooks repo
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/blob/master/Python/34_Segmentation_Evaluation.ipynb
+            with fixes from:
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/4a3967e5edeb6f746e4c79d53b416a2489ba8346
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/0cb643655d9fc6f08cecffc1ffe1d0997d78dedb
         seg-metrics: a Python package to compute segmentation metrics
             https://github.com/Jingnan-Jia/segmentation_metrics
         ToothFairy1 Challenge:
@@ -70,8 +76,17 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[f
     # gt and pred should have the same shape
     assert gt.GetSize() == pred.GetSize(), "gt pred not matching shapes!"
 
-    # img should be in 3D
-    assert gt.GetDimension() == 3, "sitk img should be in 3D"
+    # img should be in 3D (allow for 2D for testing purposes)
+    assert gt.GetDimension() in (2, 3), "sitk img in 2D|3D, only fo HD"
+
+    # NOTE: need to pad the image in case it is completely filled
+    # found that when the image is completely filled,
+    # SignedMaurerDistanceMap does not work as it gives all 0 distance.
+    # see issue: https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/issues/453
+    # fix by pad the gt and pred
+
+    gt = pad_sitk_image(gt)
+    pred = pad_sitk_image(pred)
 
     # only need bool binary mask of the current label
     gt_label_img = gt == label
@@ -132,7 +147,7 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[f
     # populate the rest of the list with 0
     ref2pred_distances += [0] * (num_ref_surface_pixels - len(ref2pred_distances))
 
-    # print("ref2pred_distances =\n", ref2pred_distances)
+    # print("ref2pred_distances =\n", sorted(ref2pred_distances, reverse=True))
     # print("# ref2pred_distances =\n", len(ref2pred_distances))
 
     # do the same for ther other direction pred2ref
@@ -141,7 +156,7 @@ def hd95_single_label(*, gt: sitk.Image, pred: sitk.Image, label: int) -> list[f
     )
     pred2ref_distances += [0] * (num_pred_surface_pixels - len(pred2ref_distances))
 
-    # print("pred2ref_distances =\n", pred2ref_distances)
+    # print("pred2ref_distances =\n", sorted(pred2ref_distances, reverse=True))
     # print("# pred2ref_distances =\n", len(pred2ref_distances))
 
     # use formula -> max(d_95(A,B), d_95(B,A))
@@ -170,22 +185,21 @@ def _get_surface_distance(seg: sitk.Image) -> tuple[sitk.Image, sitk.Image, int]
         ITK Forum:
             https://discourse.itk.org/t/computing-95-hausdorff-distance/3832/
         ITK tutorial surface_hausdorff_distance:
-            http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/34_Segmentation_Evaluation.html
+            NOTE: use the latest InsightSoftwareConsortium/SimpleITK-Notebooks repo
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/blob/master/Python/34_Segmentation_Evaluation.ipynb
+            with fixes from:
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/4a3967e5edeb6f746e4c79d53b416a2489ba8346
+            https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/0cb643655d9fc6f08cecffc1ffe1d0997d78dedb
         seg-metrics: a Python package to compute segmentation metrics
             https://github.com/Jingnan-Jia/segmentation_metrics
         ToothFairy1 Challenge:
             https://github.com/AImageLab-zip/ToothFairy/blob/main/ToothFairy/evaluation/evaluation.py
-    """
 
-    # get map of the distance to boundary for input segmentation mask
-    # use image spacing with Maurer distance transform
-    seg_distance_map = sitk.Abs(
-        sitk.SignedMaurerDistanceMap(
-            seg,
-            squaredDistance=False,
-            useImageSpacing=True,
-        )
-    )
+    NOTE: in bugfix https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/4a3967e5edeb6f746e4c79d53b416a2489ba8346
+    "BUG: Used segmentation distance maps and not surface distance maps.
+        Distances between surfaces should use the surface distance maps and
+        not distance maps based on the original segmentations."
+    """
 
     # extract the contour outline for later masking
     seg_surface = sitk.LabelContour(
@@ -194,9 +208,22 @@ def _get_surface_distance(seg: sitk.Image) -> tuple[sitk.Image, sitk.Image, int]
         fullyConnected=True,
     )
 
+    # get map of the distance to boundary for input segmentation mask
+    # use image spacing with Maurer distance transform
+    seg_distance_map = sitk.Abs(
+        sitk.SignedMaurerDistanceMap(
+            seg_surface,  # fix in SimpleITK-Notebooks/commit/4a3967
+            squaredDistance=False,
+            useImageSpacing=True,
+        )
+    )
+
     # with np.printoptions(precision=1, suppress=True):
     #     print("seg_distance_map =\n", ArrayView(seg_distance_map))
+    #     print("seg_distance_map.GetSize() =", seg_distance_map.GetSize())
+
     #     print("seg_surface =\n", ArrayView(seg_surface))
+    #     print("seg_surface.GetSize() =", seg_surface.GetSize())
 
     # get the number of surface pixels for HD sorting later
     statistics_image_filter = sitk.StatisticsImageFilter()

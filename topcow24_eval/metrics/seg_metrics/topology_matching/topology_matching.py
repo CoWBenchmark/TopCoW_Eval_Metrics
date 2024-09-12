@@ -134,6 +134,7 @@ def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     gt_mask = sitk.GetArrayFromImage(gt)
 
     # add edge-list graph entry
+    print("\n> topology_matching > generate_edgelist for GT:")
     ant_list, pos_list = generate_edgelist(gt_mask)
 
     gt_ant_topo["graph"] = ant_list
@@ -162,6 +163,7 @@ def topology_matching(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     pred_mask = sitk.GetArrayFromImage(pred)
 
     # add edge-list graph entry
+    print("\n> topology_matching > generate_edgelist for Pred:")
     ant_list, pos_list = generate_edgelist(pred_mask)
 
     pred_ant_topo["graph"] = ant_list

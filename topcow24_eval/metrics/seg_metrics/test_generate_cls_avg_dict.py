@@ -1,5 +1,9 @@
 import SimpleITK as sitk
-from generate_cls_avg_dict import generate_cls_avg_dict, update_cls_avg_dict
+from generate_cls_avg_dict import (
+    generate_cls_avg_dict,
+    update_cls_avg_dict,
+    update_metrics_dict,
+)
 from topcow24_eval.constants import TASK
 
 
@@ -192,63 +196,6 @@ def test_update_cls_avg_dict_append_existing():
 # e2e for generate_cls_avg_dict tests
 
 
-def test_generate_cls_avg_dict_blank_binary():
-    """
-    if gt and pred contains no labels and for binary task,
-    when there are no labels in the images, return blank cls_avg_dict
-    with BIN_CLASS_LABEL_MAP
-    """
-    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
-    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
-    cls_avg_dict = generate_cls_avg_dict(
-        gt=image1,
-        pred=image2,
-        task=TASK.BINARY_SEGMENTATION,
-        # dummy_metric_func returns metric_scores
-        metric_keys=["M1", "M2", "M3"],
-        metric_func=dummy_metric_func,
-    )
-    assert cls_avg_dict == {
-        "1": {
-            "label": "MergedBin",
-            "M1": 0,
-            "M2": 0,
-            "M3": 0,
-        }
-    }
-
-
-def test_generate_cls_avg_dict_normal_binary():
-    """
-    if gt and pred contains binary labels and for binary task,
-    compute the metric_score for binary CoW and update the cls_avg_dict
-    with BIN_CLASS_LABEL_MAP
-    """
-    image1 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
-    image2 = sitk.Image([3, 3, 3], sitk.sitkUInt8)
-    # set some regions to a non-zero label
-    image1[0, 0, 0] = 1
-    image2[2, 2, 2] = 1
-
-    cls_avg_dict = generate_cls_avg_dict(
-        gt=image1,
-        pred=image2,
-        task=TASK.BINARY_SEGMENTATION,
-        # dummy_metric_func returns metric_scores
-        metric_keys=["M1", "M2", "M3"],
-        metric_func=dummy_metric_func,
-    )
-    # now matches the output from dummy_metric_func
-    assert cls_avg_dict == {
-        "1": {
-            "label": "MergedBin",
-            "M1": 43,
-            "M2": 2025,
-            "M3": 8007,
-        }
-    }
-
-
 def test_generate_cls_avg_dict_blank_multiclass():
     """
     if gt and pred contains no labels and for multiclass task,
@@ -404,4 +351,37 @@ def test_generate_cls_avg_dict_label101112HD_multiclass():
         "ClsAvgHD": {"label": "ClsAvgHD", "HD": 1.0999999999999999},  # avg = 1.1
         "ClsAvgHD95": {"label": "ClsAvgHD95", "HD95": 5.5},  # average = 5.5
         "MergedBin": {"label": "MergedBin", "HD": 0.1, "HD95": 0.5},
+    }
+
+
+def test_update_metrics_dict():
+    """test for update_metrics_dict() used in evaluation.py"""
+    cls_avg_dict = {
+        "22": {"label": "Catch", "Metric1": 314},
+        "42": {"label": "dolphin", "Metric1": 2024},
+    }
+
+    metrics_dict = {}
+
+    # update metrics_dict with label-22
+    update_metrics_dict(
+        cls_avg_dict=cls_avg_dict,
+        metrics_dict=metrics_dict,
+        key="22",
+        metric_name="Metric1",
+    )
+    # check the updated metrics_dict
+    assert metrics_dict == {"Metric1_Catch": 314}
+
+    # update metrics_dict again, now with label-42
+    update_metrics_dict(
+        cls_avg_dict=cls_avg_dict,
+        metrics_dict=metrics_dict,
+        key="42",
+        metric_name="Metric1",
+    )
+    # check the updated metrics_dict
+    assert metrics_dict == {
+        "Metric1_Catch": 314,
+        "Metric1_dolphin": 2024,
     }

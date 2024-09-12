@@ -35,12 +35,63 @@ def test_hd95_single_label_Fig5c():
 
     HD = 11.31
     HD95 = 6.79
+
+    NOTE: 2D vs padded to 3D is different for HD/HD95 calculations
+    e.g. in 2D, the seg_surface can be:
+    seg_surface =
+       [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+
+    but when padded to be 3D, seg_surface no longer has in-slice
+    hollow region for the same slice:
+    seg_surface =
+    ...
+
+     [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+      [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+    ...
+
     """
     gt_path = TESTDIR_2D / "shape_14x14_Fig63_bin_gt.nii.gz"
     pred_path = TESTDIR_2D / "shape_14x14_Fig63_bin_pred.nii.gz"
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
+
+    # NOTE: in order for the HD/HD95 calculation to stay in 2D for testing,
+    # Extracting a 2D image using Extract, this squeezes the array to 2D
+    # https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ExtractImageFilter.html
+    size_2d = gt_img.GetSize()[:-1] + (0,)  # The 3rd dimension is reduced
+    gt_img = sitk.Extract(gt_img, size_2d)
+    pred_img = sitk.Extract(pred_img, size_2d)
 
     # HD = 11.31
     # HD95 = 6.79
@@ -56,12 +107,49 @@ def test_hd95_single_label_Fig10():
     Common Limitations of Image Processing Metrics: A Picture Story
 
     Fig10 caption gives HD95 = 2.0
+
+    NOTE: 2D vs padded to 3D is different for HD/HD95 calculations
+    e.g. in 2D, the seg_surface can be:
+       [[[0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 1 1 1 1 1 0 0 0]
+        [0 0 0 1 0 0 0 1 0 0 0]
+        [0 0 0 1 0 0 0 1 0 0 0]
+        [0 0 0 1 0 0 0 1 0 0 0]
+        [0 0 0 1 1 1 1 1 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]]]
+
+    but when padded to be 3D, seg_surface no longer has in-slice
+    hollow region for the same slice:
+       [[0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 1 1 1 1 1 0 0 0 0]
+        [0 0 0 0 1 1 1 1 1 0 0 0 0]
+        [0 0 0 0 1 1 1 1 1 0 0 0 0]
+        [0 0 0 0 1 1 1 1 1 0 0 0 0]
+        [0 0 0 0 1 1 1 1 1 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]]
     """
     gt_path = TESTDIR_2D / "shape_11x11_2D_Fig10_bin_gt.nii.gz"
     pred_path = TESTDIR_2D / "shape_11x11_2D_Fig10_bin_pred.nii.gz"
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
+
+    # NOTE: in order for the HD/HD95 calculation to stay in 2D for testing,
+    # Extracting a 2D image using Extract, this squeezes the array to 2D
+    # https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ExtractImageFilter.html
+    size_2d = gt_img.GetSize()[:-1] + (0,)  # The 3rd dimension is reduced
+    gt_img = sitk.Extract(gt_img, size_2d)
+    pred_img = sitk.Extract(pred_img, size_2d)
 
     hd95_score, hd100_score = hd95_single_label(gt=gt_img, pred=pred_img, label=1)
     assert hd95_score == 2.0
@@ -77,6 +165,36 @@ def test_hd95_single_label_Fig50_large_binary():
 
     Fig50 caption gives HD95 = 0.0 for Pred 1
                         HD95 = 0.8 for Pred 2
+
+    NOTE: 2D vs padded to 3D is different for HD/HD95 calculations
+    e.g. in 2D, the seg_surface can be:
+       [[[0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 1 1 1 1 0]
+        [0 0 0 0 0 0 1 0 0 1 0]
+        [0 0 0 0 0 0 1 0 0 1 0]
+        [0 0 0 0 0 0 1 0 0 1 0]
+        [0 0 0 1 1 1 0 0 0 1 0]
+        [0 0 0 1 0 0 0 0 0 1 0]
+        [0 0 0 1 1 1 1 1 1 1 0]
+        [0 0 0 0 0 0 0 0 0 0 0]]]
+
+    but when padded to be 3D, seg_surface no longer has in-slice
+    hollow region for the same slice:
+       [[0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 1 1 1 1 0 0]
+        [0 0 0 0 0 0 0 1 1 1 1 0 0]
+        [0 0 0 0 0 0 0 1 1 1 1 0 0]
+        [0 0 0 0 0 0 0 1 1 1 1 0 0]
+        [0 0 0 0 1 1 1 1 1 1 1 0 0]
+        [0 0 0 0 1 1 1 1 1 1 1 0 0]
+        [0 0 0 0 1 1 1 1 1 1 1 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]
+        [0 0 0 0 0 0 0 0 0 0 0 0 0]]
     """
     gt_path = TESTDIR_2D / "shape_11x11_2D_Fig50_large_bin_gt.nii.gz"
     pred_1_path = TESTDIR_2D / "shape_11x11_2D_Fig50_large_bin_pred_1.nii.gz"
@@ -85,6 +203,14 @@ def test_hd95_single_label_Fig50_large_binary():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_1_img, _ = load_image_and_array_as_uint8(pred_1_path)
     pred_2_img, _ = load_image_and_array_as_uint8(pred_2_path)
+
+    # NOTE: in order for the HD/HD95 calculation to stay in 2D for testing,
+    # Extracting a 2D image using Extract, this squeezes the array to 2D
+    # https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ExtractImageFilter.html
+    size_2d = gt_img.GetSize()[:-1] + (0,)  # The 3rd dimension is reduced
+    gt_img = sitk.Extract(gt_img, size_2d)
+    pred_1_img = sitk.Extract(pred_1_img, size_2d)
+    pred_2_img = sitk.Extract(pred_2_img, size_2d)
 
     # Pred 1 HD95 = 0.00
     hd95_score, hd100_score = hd95_single_label(gt=gt_img, pred=pred_1_img, label=1)
@@ -197,6 +323,14 @@ def test_hd95_single_label_Fig59_hole():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_1_img, _ = load_image_and_array_as_uint8(pred_1_path)
     pred_2_img, _ = load_image_and_array_as_uint8(pred_2_path)
+
+    # NOTE: in order for the HD/HD95 calculation to stay in 2D for testing,
+    # Extracting a 2D image using Extract, this squeezes the array to 2D
+    # https://simpleitk.org/doxygen/latest/html/classitk_1_1simple_1_1ExtractImageFilter.html
+    size_2d = gt_img.GetSize()[:-1] + (0,)  # The 3rd dimension is reduced
+    gt_img = sitk.Extract(gt_img, size_2d)
+    pred_1_img = sitk.Extract(pred_1_img, size_2d)
+    pred_2_img = sitk.Extract(pred_2_img, size_2d)
 
     # Pred 1 HD = 1, HD95 = 1
     hd95_score, hd100_score = hd95_single_label(gt=gt_img, pred=pred_1_img, label=1)
@@ -356,6 +490,11 @@ def test_hd95_single_label_itk_tutorial():
 
     Segmentation-Representation-and-the-Hausdorff-Distance
 
+    NOTE: in bugfix https://github.com/InsightSoftwareConsortium/SimpleITK-Notebooks/commit/4a3967e5edeb6f746e4c79d53b416a2489ba8346
+    "BUG: Used segmentation distance maps and not surface distance maps.
+        Distances between surfaces should use the surface distance maps and
+        not distance maps based on the original segmentations."
+
     surface_hausdorff_distance()
     Surface Hausdorff result (reference1-segmentation): 6.0
     Surface Hausdorff result (reference2-segmentation): 8.9442720413208
@@ -381,53 +520,24 @@ def test_hd95_single_label_itk_tutorial():
         > 250
     )
 
-    # joinSeries to stack to 3D
-    seg_3d = sitk.JoinSeries(seg)
-    reference_segmentation1_3d = sitk.JoinSeries(reference_segmentation1)
-    reference_segmentation2_3d = sitk.JoinSeries(reference_segmentation2)
+    # # [deprecated] joinSeries to stack to 3D
+    # seg_3d = sitk.JoinSeries(seg)
+    # reference_segmentation1_3d = sitk.JoinSeries(reference_segmentation1)
+    # reference_segmentation2_3d = sitk.JoinSeries(reference_segmentation2)
 
     # Use reference1, larger inner annulus radius, the surface based computation
     # Surface Hausdorff result (reference1-segmentation): 6.0
-    _, hd100_score = hd95_single_label(
-        gt=reference_segmentation1_3d, pred=seg_3d, label=1
-    )
+    _, hd100_score = hd95_single_label(gt=reference_segmentation1, pred=seg, label=1)
     assert hd100_score == 6.0
 
     # Use reference2, smaller inner annulus radius, the surface based computation
     # Surface Hausdorff result (reference2-segmentation): 8.9442720413208
-    _, hd100_score = hd95_single_label(
-        gt=reference_segmentation2_3d, pred=seg_3d, label=1
-    )
+    _, hd100_score = hd95_single_label(gt=reference_segmentation2, pred=seg, label=1)
     assert hd100_score == 8.9442720413208
 
 
 #######################################################################
 # e2e test for hd_dict from hd95_all_classes()
-
-
-def test_hd95_all_classes_Fig5c():
-    """
-    example from Fig5c from Nat Method 2024
-        Understanding metric-related pitfalls in
-        image analysis validation
-
-    also is the same example from Fig 63 of
-    Common Limitations of Image Processing Metrics: A Picture Story
-
-    HD = 11.31
-    HD95 = 6.79
-    """
-    gt_path = TESTDIR_2D / "shape_14x14_Fig63_bin_gt.nii.gz"
-    pred_path = TESTDIR_2D / "shape_14x14_Fig63_bin_pred.nii.gz"
-
-    gt_img, _ = load_image_and_array_as_uint8(gt_path)
-    pred_img, _ = load_image_and_array_as_uint8(pred_path)
-
-    hd_dict = hd95_all_classes(gt=gt_img, pred=pred_img, task=TASK.BINARY_SEGMENTATION)
-
-    assert hd_dict == {
-        "1": {"label": "MergedBin", "HD95": 6.788224983215328, "HD": 11.313708305358887}
-    }
 
 
 def test_hd95_all_classes_Fig54_5class():
@@ -514,4 +624,51 @@ def test_hd95_all_classes_3D_nipy_scaled_image():
         # avg of 4, 2.236, 3.74 = 3.325
         "ClsAvgHD": {"label": "ClsAvgHD", "HD": 3.3259085019429526},
         "MergedBin": {"label": "MergedBin", "HD95": 2.69442720413208, "HD": 3.0},
+    }
+
+
+def test_hd95_all_classes_completely_filled():
+    """
+    found that when the image is completely filled,
+    SignedMaurerDistanceMap does not work as it gives all 0 distance.
+
+    the ref2pred_distances and pred2ref_distances can be empty []!
+    and the values are extremely low like 1.8e+19!
+
+    fixed by padding the gt and pred before hd calculation
+
+    without padding, the distance map is all 0 for completely filled image
+
+    image1:
+        [[[15 15]
+        [15 15]]
+
+        [[15 15]
+        [15 15]]]
+    seg_distance_map =
+        [[[1.8e+19 1.8e+19]
+        [1.8e+19 1.8e+19]]
+
+        [[1.8e+19 1.8e+19]
+        [1.8e+19 1.8e+19]]]
+    """
+    # Now both padded and un-padded works because of the padding fix
+
+    # a 3D example
+    image1 = sitk.Image([2, 2, 2], sitk.sitkUInt8)
+    # Fill with 15s
+    image1[:, :, :] = 15
+
+    print("image1:")
+    print(sitk.GetArrayViewFromImage(image1))
+
+    hd_dict = hd95_all_classes(
+        gt=image1, pred=image1, task=TASK.MULTICLASS_SEGMENTATION
+    )
+
+    assert hd_dict == {
+        "15": {"label": "3rd-A2", "HD95": 0.0, "HD": 0.0},
+        "ClsAvgHD95": {"label": "ClsAvgHD95", "HD95": 0.0},
+        "ClsAvgHD": {"label": "ClsAvgHD", "HD": 0.0},
+        "MergedBin": {"label": "MergedBin", "HD95": 0.0, "HD": 0.0},
     }

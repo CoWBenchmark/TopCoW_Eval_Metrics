@@ -67,6 +67,8 @@ def graph_classification(*, gt: sitk.Image, pred: sitk.Image) -> dict:
 
     gt_mask = sitk.GetArrayFromImage(gt)
 
+    print("\n> graph_classification > generate_edgelist for GT:")
+
     ant_list, pos_list = generate_edgelist(gt_mask)
 
     graph_dict["anterior"]["gt_graph"] = ant_list
@@ -76,6 +78,8 @@ def graph_classification(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     # Then for Pred
 
     pred_mask = sitk.GetArrayFromImage(pred)
+
+    print("\n> graph_classification > generate_edgelist for Pred:")
 
     ant_list, pos_list = generate_edgelist(pred_mask)
 
