@@ -12,6 +12,9 @@ To setup and install `topcow24_eval` package:
 ```sh
 # from topcow24_eval root
 bash ./setup.sh
+
+# activate the env with topcow24_eval installed
+source env_py310/bin/activate
 ```
 
 ## Run Evaluations with `python3 topcow24_eval/evaluation.py`
@@ -54,6 +57,13 @@ _You can also specify your own custom paths for the ground-truth, predictions et
 
 **The naming of gt and pred files can be arbitrary as long as their filelist dataframe `.sort_values()` are sorted in the same way!**
 
+The accepted file formats for ground-truth and predictions are:
+
+- `.nii.gz`, `.mha` for image
+- `.txt`, `.json` for bounding box
+    - (_`roi-metadata/` only allows for `.txt` for roi-txt. See below._)
+- `.yml`, `.json` for graph/edge-list
+
 #### 2.1 Folder of `roi-metadata/` for Task-1-CoW-Segmentation
 
 Optionally, if you evaluate for Task-1-CoW-Segmentation, you can decide to whether evaluate on the
@@ -71,7 +81,6 @@ Afterwards, make sure to put the roi-txt files in the folder `roi-metadata/` (or
 ```sh
 # note the new roi-metadata/
 ├── ground-truth
-├── output
 ├── predictions
 ├── roi-metadata
 ├── topcow24_eval
