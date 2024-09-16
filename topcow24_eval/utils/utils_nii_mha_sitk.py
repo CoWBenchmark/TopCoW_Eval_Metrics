@@ -2,21 +2,8 @@
 utility functions to work with nibael, mha and SimpleITK
 """
 
-import os
-
 import numpy as np
 import SimpleITK as sitk
-
-
-def convert_mha_nii(img_path, file_ending, save_path="."):
-    """
-    convert between .mha metaImage to .nii.gz nifti compressed
-    file_ending='.nii.gz' | '.mha'
-    """
-    img = sitk.ReadImage(img_path)
-    source_fname = os.path.basename(img_path)
-    target_fname = source_fname.split(".")[0] + file_ending
-    sitk.WriteImage(img, os.path.join(save_path, target_fname), useCompression=True)
 
 
 def load_image_and_array_as_uint8(
@@ -64,6 +51,6 @@ def access_sitk_attr(image: sitk.Image):
     print(f"image.GetDimension() = {image.GetDimension()}")
     print(f"image.GetPixelIDValue() = {image.GetPixelIDValue()}")
     print(f"image.GetPixelIDTypeAsString() = {image.GetPixelIDTypeAsString()}")
-    for key in image.GetMetaDataKeys():
-        print('"{0}":"{1}"'.format(key, image.GetMetaData(key)))
+    # for key in image.GetMetaDataKeys():
+    #     print('"{0}":"{1}"'.format(key, image.GetMetaData(key)))
     print("##############################################")

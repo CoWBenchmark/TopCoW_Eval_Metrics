@@ -6,7 +6,7 @@ from pathlib import Path
 
 import SimpleITK as sitk
 from cls_avg_hd95 import hd95_all_classes, hd95_single_label
-from topcow24_eval.constants import HD95_UPPER_BOUND, TASK
+from topcow24_eval.constants import HD95_UPPER_BOUND
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 ##############################################################
@@ -553,9 +553,7 @@ def test_hd95_all_classes_Fig54_5class():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    hd_dict = hd95_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    hd_dict = hd95_all_classes(gt=gt_img, pred=pred_img)
 
     assert hd_dict == {
         # Pred 1 HD=1.4, HD95=1.3
@@ -599,9 +597,7 @@ def test_hd95_all_classes_3D_nipy_scaled_image():
     gt_img, _ = load_image_and_array_as_uint8(gt_path, log_sitk_attr=True)
     pred_img, _ = load_image_and_array_as_uint8(pred_path, log_sitk_attr=True)
 
-    hd_dict = hd95_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    hd_dict = hd95_all_classes(gt=gt_img, pred=pred_img)
 
     assert hd_dict == {
         # Label-1 GT and Pred differ by a corner voxel along the Y-size
@@ -662,9 +658,7 @@ def test_hd95_all_classes_completely_filled():
     print("image1:")
     print(sitk.GetArrayViewFromImage(image1))
 
-    hd_dict = hd95_all_classes(
-        gt=image1, pred=image1, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    hd_dict = hd95_all_classes(gt=image1, pred=image1)
 
     assert hd_dict == {
         "15": {"label": "3rd-A2", "HD95": 0.0, "HD": 0.0},

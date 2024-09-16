@@ -4,8 +4,7 @@ Helper for generating a class average score dict
 Metrics for Task-1-CoW-Segmentation
 """
 
-import pprint
-from enum import Enum
+# import pprint
 from typing import Callable
 
 import numpy as np
@@ -21,7 +20,6 @@ def generate_cls_avg_dict(
     *,
     gt: sitk.Image,
     pred: sitk.Image,
-    task: Enum,
     metric_keys: list[str],
     metric_func: Callable,
 ) -> dict:
@@ -31,7 +29,7 @@ def generate_cls_avg_dict(
             ground truth sitk.Image
         pred:
             prediction sitk.Image
-        task:
+        [deprecated] task:
             [deprecated] If task is TASK.BINARY_SEGMENTATION,
                 it will compute the MergedBin score
             If task is TASK.MULTICLASS_SEGMENTATION, it will
@@ -52,10 +50,9 @@ def generate_cls_avg_dict(
             that are present in both gt and pred to compute the
             class-average-metric per case
     """
-    print("\n-- generate_cls_avg_dict()")
-    print(f"task = {task}")
-    print(f"metric_keys = {metric_keys}")
-    print(f"metric_func = {metric_func.__name__}\n")
+    # print("\n-- generate_cls_avg_dict()")
+    # print(f"metric_keys = {metric_keys}")
+    # print(f"metric_func = {metric_func.__name__}\n")
 
     # gt and pred should have the same shape
     assert gt.GetSize() == pred.GetSize(), "gt pred not matching shapes!"
@@ -83,7 +80,7 @@ def generate_cls_avg_dict(
     # key in cls_avg_dict for class average
     cls_avg_keys = [f"ClsAvg{metric_key}" for metric_key in metric_keys]
 
-    print("### Multiclass Segmentation ###")
+    # print("### Multiclass Segmentation ###")
 
     # when there are no labels in the images,
     # return blank cls_avg_dict with only average and merged_binary of 0
@@ -108,13 +105,13 @@ def generate_cls_avg_dict(
             metric_scores=[0] * len(metric_keys),
         )
 
-        print(f"\ncls_avg_dict = {cls_avg_dict}")
+        # print(f"\ncls_avg_dict = {cls_avg_dict}")
         return cls_avg_dict
 
     # otherwise compute the metric_scores for
     # all present labels and update the cls_avg_dict
 
-    print("### for all present labels ###")
+    # print("### for all present labels ###")
 
     sum_scores = np.zeros(len(metric_keys))
 
@@ -148,7 +145,7 @@ def generate_cls_avg_dict(
             metric_scores=avg_scores,
         )
 
-    print("### for binary merged ###")
+    # print("### for binary merged ###")
 
     # binary segmentation is also automatically considered for multiclass task
     # binary task score is done by binary-thresholding the sitk Image
@@ -173,8 +170,8 @@ def generate_cls_avg_dict(
         metric_scores=metric_scores,
     )
 
-    print("\ncls_avg_dict =")
-    pprint.pprint(cls_avg_dict, sort_dicts=False)
+    # print("\ncls_avg_dict =")
+    # pprint.pprint(cls_avg_dict, sort_dicts=False)
     return cls_avg_dict
 
 
@@ -210,15 +207,15 @@ def update_cls_avg_dict(
     metric_scores:
         scores that correspond to the metric_keys 1-to-1
     """
-    print("\n::update_cls_avg_dict()::\n")
-    print(f"label = {label}")
-    print(f"metric_keys = {metric_keys}")
-    print(f"metric_scores = {metric_scores}")
+    # print("\n::update_cls_avg_dict()::\n")
+    # print(f"label = {label}")
+    # print(f"metric_keys = {metric_keys}")
+    # print(f"metric_scores = {metric_scores}")
 
     # when metric_scores is a single value like Dice
     # ensure the type is list
     if not isinstance(metric_scores, list):
-        print("metric_scores NOT a list, convert to list")
+        # print("metric_scores NOT a list, convert to list")
         metric_scores = [metric_scores]
 
     # make sure metric_keys and metric_scores have same dim
@@ -236,7 +233,7 @@ def update_cls_avg_dict(
         if label_value.startswith("ClsAvg"):
             # for cls_avg_key str
             for_cls_avg = True
-            print("is for_cls_avg")
+            # print("is for_cls_avg")
     else:
         # for voxel_label int
         # label is acquired from label_map
@@ -252,11 +249,11 @@ def update_cls_avg_dict(
         # when label is cls_avg_key string,
         # only update its corresponding metric_key
         if for_cls_avg and (label_value != f"ClsAvg{metric_key}"):
-            print(f"Skip {metric_key}")
+            # print(f"Skip {metric_key}")
             continue
         cls_avg_dict[str(label)][metric_key] = metric_scores[index]
 
-    print("\n::update_cls_avg_dict() DONE! ::\n")
+    # print("\n::update_cls_avg_dict() DONE! ::\n")
 
 
 def update_metrics_dict(

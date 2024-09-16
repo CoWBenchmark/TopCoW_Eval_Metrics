@@ -48,6 +48,7 @@ _You can also specify your own custom paths for the ground-truth, predictions et
         track,
         task,
         expected_num_cases,
+        need_crop,
         predictions_path=TESTDIR / "task_1_seg_predictions/",
         ground_truth_path=TESTDIR / "task_1_seg_ground-truth/",
         output_path=output_path,
@@ -59,7 +60,7 @@ _You can also specify your own custom paths for the ground-truth, predictions et
 
 The accepted file formats for ground-truth and predictions are:
 
-- `.nii.gz`, `.mha` for image
+- NIfTI (`.nii.gz`, `.nii`) or SimpleITK compatible images `.mha` for images and masks
 - `.txt`, `.json` for bounding box
     - (_`roi-metadata/` only allows for `.txt` for roi-txt. See below._)
 - `.yml`, `.json` for graph/edge-list
@@ -118,7 +119,7 @@ Seven evaluation metrics with equal weights for multi-class (CoW anatomical vess
 
 In [`topcow24_eval/metrics/box_metrics/`](./topcow24_eval/metrics/box_metrics/), you will find our implementations for evaluating bounding box predictions.
 
-1. Boundary Intersection over Union (IoU):
+1. Boundary Intersection over Union (IoU) and IoU:
     * [`iou_dict_from_files.py`](./topcow24_eval/metrics/box_metrics/iou_dict_from_files.py)
 
 ### Graph Classification metrics
@@ -169,29 +170,34 @@ $ pytest .
 
 topcow24_eval/aggregate/test_aggregate_all_detection_dicts.py ...                                                                            [  2%]
 topcow24_eval/aggregate/test_aggregate_all_graph_dicts.py ...                                                                                [  4%]
-topcow24_eval/aggregate/test_aggregate_all_topo_dicts.py .                                                                                   [  5%]
-topcow24_eval/aggregate/test_edge_list_to_variant_str.py .                                                                                   [  6%]
-topcow24_eval/metrics/box_metrics/test_boundary_iou_from_tuple.py ...........                                                                [ 14%]
-topcow24_eval/metrics/box_metrics/test_boundary_points_with_distances.py .....                                                               [ 18%]
-topcow24_eval/metrics/box_metrics/test_iou_dict_from_files.py ....                                                                           [ 21%]
-topcow24_eval/metrics/edg_metrics/test_edge_dict_to_list.py ..                                                                               [ 22%]
-topcow24_eval/metrics/edg_metrics/test_graph_dict_from_files.py ..                                                                           [ 24%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_edge_criteria.py ..                                                              [ 25%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_generate_edgelist.py ...                                                         [ 28%]
-topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py .                                                        [ 28%]
-topcow24_eval/metrics/seg_metrics/test_clDice.py ....                                                                                        [ 31%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py ...............                                                                         [ 43%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py .............                                                                         [ 53%]
-topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py .............                                                                         [ 62%]
-topcow24_eval/metrics/seg_metrics/test_detection_grp2_labels.py ........                                                                     [ 68%]
-topcow24_eval/metrics/seg_metrics/test_generate_cls_avg_dict.py ..........                                                                   [ 76%]
-topcow24_eval/metrics/seg_metrics/topology_matching/test_check_LR_flip.py ..                                                                 [ 78%]
-topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py ........                                                       [ 84%]
-topcow24_eval/test_evaluation.py .                                                                                                           [ 84%]
-topcow24_eval/utils/test_utils_box.py ..........                                                                                             [ 92%]
-topcow24_eval/utils/test_utils_edge.py ..                                                                                                    [ 93%]
+topcow24_eval/aggregate/test_aggregate_all_topo_dicts.py .                                                                                   [  4%]
+topcow24_eval/aggregate/test_edge_list_to_variant_str.py .                                                                                   [  5%]
+topcow24_eval/metrics/box_metrics/test_boundary_iou_from_tuple.py ...........                                                                [ 13%]
+topcow24_eval/metrics/box_metrics/test_boundary_points_with_distances.py .....                                                               [ 16%]
+topcow24_eval/metrics/box_metrics/test_iou_dict_from_files.py ....                                                                           [ 19%]
+topcow24_eval/metrics/edg_metrics/test_edge_dict_to_list.py ..                                                                               [ 20%]
+topcow24_eval/metrics/edg_metrics/test_graph_dict_from_files.py ..                                                                           [ 22%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_edge_criteria.py ..                                                              [ 23%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_generate_edgelist.py ...                                                         [ 25%]
+topcow24_eval/metrics/seg_metrics/graph_classification/test_graph_classification.py .                                                        [ 26%]
+topcow24_eval/metrics/seg_metrics/test_clDice.py ....                                                                                        [ 29%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_b0.py ...............                                                                         [ 39%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_dice.py .............                                                                         [ 48%]
+topcow24_eval/metrics/seg_metrics/test_cls_avg_hd95.py .............                                                                         [ 57%]
+topcow24_eval/metrics/seg_metrics/test_detection_grp2_labels.py ........                                                                     [ 63%]
+topcow24_eval/metrics/seg_metrics/test_generate_cls_avg_dict.py ..........                                                                   [ 70%]
+topcow24_eval/metrics/seg_metrics/topology_matching/test_check_LR_flip.py ..                                                                 [ 71%]
+topcow24_eval/metrics/seg_metrics/topology_matching/test_topology_matching.py ........                                                       [ 77%]
+topcow24_eval/test_evaluation_task_1_seg.py ..                                                                                               [ 78%]
+topcow24_eval/test_evaluation_task_2_box.py .                                                                                                [ 79%]
+topcow24_eval/test_evaluation_task_3_edg.py .                                                                                                [ 79%]
+topcow24_eval/test_score_case.py ....                                                                                                        [ 82%]
+topcow24_eval/utils/test_crop_gt_and_pred.py .                                                                                               [ 83%]
+topcow24_eval/utils/test_crop_sitk.py ....                                                                                                   [ 86%]
+topcow24_eval/utils/test_utils_box.py ..........                                                                                             [ 93%]
+topcow24_eval/utils/test_utils_edge.py ..                                                                                                    [ 94%]
 topcow24_eval/utils/test_utils_mask.py ......                                                                                                [ 98%]
 topcow24_eval/utils/test_utils_neighborhood.py ..                                                                                            [100%]
 
-======================================================== 132 passed, 10 warnings in 10.04s =========================================================
+======================================================== 144 passed, 15 warnings in 10.54s =========================================================
 ```

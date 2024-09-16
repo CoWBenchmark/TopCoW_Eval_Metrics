@@ -5,7 +5,6 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from enum import Enum
 
 import numpy as np
 import SimpleITK as sitk
@@ -235,7 +234,7 @@ def _get_surface_distance(seg: sitk.Image) -> tuple[sitk.Image, sitk.Image, int]
     return seg_distance_map, seg_surface, num_surface_pixels
 
 
-def hd95_all_classes(*, gt: sitk.Image, pred: sitk.Image, task: Enum) -> dict:
+def hd95_all_classes(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with hd95_single_label() as metric_func
@@ -243,7 +242,6 @@ def hd95_all_classes(*, gt: sitk.Image, pred: sitk.Image, task: Enum) -> dict:
     hd_dict = generate_cls_avg_dict(
         gt=gt,
         pred=pred,
-        task=task,
         # hd95_single_label returns [hd95_score, hd100_score]
         metric_keys=["HD95", "HD"],
         metric_func=hd95_single_label,

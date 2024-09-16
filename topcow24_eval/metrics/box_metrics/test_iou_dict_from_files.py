@@ -44,10 +44,10 @@ def test_iou_dict_from_files_tiny_vs_small():
     """
     iou_dict = iou_dict_from_files(
         TESTDIR / "test_iou_dict_from_files_tiny_vs_small_box_1.json",
-        TESTDIR / "test_iou_dict_from_files_tiny_vs_small_box_2.json",
+        TESTDIR / "test_iou_dict_from_files_tiny_vs_small_box_2.txt",
     )
     assert iou_dict == {
-        "Boundary IoU": 6 / 34,
+        "Boundary_IoU": 6 / 34,
         "IoU": 6 / 36,
     }
 
@@ -64,11 +64,11 @@ def test_iou_dict_from_files_hollow_6x3x3_shifted():
         = 12/96
     """
     iou_dict = iou_dict_from_files(
-        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_shifted_box_1.txt",
+        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_shifted_box_1.json",
         TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_shifted_box_2.txt",
     )
     assert iou_dict == {
-        "Boundary IoU": 10 / 94,
+        "Boundary_IoU": 10 / 94,
         "IoU": 12 / 96,
     }
 
@@ -86,10 +86,10 @@ def test_iou_dict_from_files_hollow_6x3x3_4x3x3():
     """
     iou_dict = iou_dict_from_files(
         TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x3x3_box_1.JSON",
-        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x3x3_box_2.JSON",
+        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x3x3_box_2.TXT",
     )
     assert iou_dict == {
-        "Boundary IoU": 34 / 52,
+        "Boundary_IoU": 34 / 52,
         "IoU": 36 / 54,
     }
 
@@ -107,9 +107,9 @@ def test_iou_dict_from_files_hollow_6x3x3_4x7x3():
     """
     iou_dict = iou_dict_from_files(
         TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x7x3_box_1.TXT",
-        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x7x3_box_2.TXT",
+        TESTDIR / "test_iou_dict_from_files_hollow_6x3x3_4x7x3_box_2.JSON",
     )
     assert iou_dict == {
-        "Boundary IoU": 30 / 100,
+        "Boundary_IoU": 30 / 100,
         "IoU": 36 / 102,
     }

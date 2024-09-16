@@ -7,11 +7,6 @@ class TRACK(Enum):
 
 
 class TASK(Enum):
-    """
-    the values of the strings are different from TopCoWAlgorithm
-    for segmentation metrics only
-    """
-
     # Task-1-CoW-Segmentation
     MULTICLASS_SEGMENTATION = "multiclass_segmentation"
     # Task-2-CoW-ObjDet
@@ -76,3 +71,10 @@ BOUNDARY_DISTANCE_RATIO = 0.2
 # NOTE: for a boundary_distance_ratio of 50%,
 # boundary_iou is just standard IoU
 MAX_DISTANCE_RATIO = 0.5
+
+
+# for gc docker
+class SLUG_OUTPUT(Enum):
+    TASK_1_SEG = "circle-of-willis-multiclass-segmentation"
+    TASK_2_BOX = "circle-of-willis-roi"
+    TASK_3_EDG = "circle-of-willis-classification"

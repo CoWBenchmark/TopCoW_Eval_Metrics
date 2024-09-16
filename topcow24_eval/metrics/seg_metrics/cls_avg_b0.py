@@ -5,7 +5,6 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from enum import Enum
 
 import numpy as np
 import SimpleITK as sitk
@@ -118,9 +117,7 @@ def betti_number_error_single_label(
     return Betti_0_error
 
 
-def betti_number_error_all_classes(
-    *, gt: sitk.Image, pred: sitk.Image, task: Enum
-) -> dict:
+def betti_number_error_all_classes(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with betti_number_error_single_label() as metric_func
@@ -128,7 +125,6 @@ def betti_number_error_all_classes(
     betti_num_err_dict = generate_cls_avg_dict(
         gt=gt,
         pred=pred,
-        task=task,
         metric_keys=["B0err"],
         metric_func=betti_number_error_single_label,
     )

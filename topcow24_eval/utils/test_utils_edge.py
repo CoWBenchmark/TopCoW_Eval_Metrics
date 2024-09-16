@@ -25,7 +25,7 @@ def test_parse_edge_yml():
 
 
 def test_parse_edge_json():
-    edge_json = TESTDIR / "cow-ant-post-classification.json"
+    edge_json = TESTDIR / "cow-ant-post-classification_gt.JSON"
     json_dict = parse_edge_json(edge_json)
     assert json_dict == {
         "anterior": {"L-A1": 1, "Acom": 1, "3rd-A2": 0, "R-A1": 1},

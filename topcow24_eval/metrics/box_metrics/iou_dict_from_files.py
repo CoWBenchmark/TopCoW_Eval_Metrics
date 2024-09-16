@@ -26,7 +26,7 @@ def iou_dict_from_files(
     and call boundary_iou_from_tuple() twice:
         once with boundary_distance_ratio set by constants.py
         then again for a standard IoU
-    return a dict {"IoU" and "Boundary IoU"}
+    return a dict {"IoU" and "Boundary_IoU"}
 
     NOTE: bbox roi files should be .txt or .json
     example json:
@@ -53,20 +53,22 @@ def iou_dict_from_files(
     assert first_box_path.is_file(), "first_box_path doesn't exist!"
     assert second_box_path.is_file(), "second_box_path doesn't exist!"
 
-    if (
-        first_box_path.suffix.lower() == ".txt"
-        and second_box_path.suffix.lower() == ".txt"
-    ):
+    if first_box_path.suffix.lower() == ".txt":
         parse_roi = parse_roi_txt
-    elif (
-        first_box_path.suffix.lower() == ".json"
-        and second_box_path.suffix.lower() == ".json"
-    ):
+    elif first_box_path.suffix.lower() == ".json":
         parse_roi = parse_roi_json
     else:
-        raise ValueError("Invalid roi file extension!")
+        raise ValueError(f"{first_box_path} invalid roi file extension!")
 
     first_box = parse_roi(first_box_path)
+
+    if second_box_path.suffix.lower() == ".txt":
+        parse_roi = parse_roi_txt
+    elif second_box_path.suffix.lower() == ".json":
+        parse_roi = parse_roi_json
+    else:
+        raise ValueError(f"{second_box_path} invalid roi file extension!")
+
     second_box = parse_roi(second_box_path)
 
     iou_dict = {}
@@ -86,7 +88,7 @@ def iou_dict_from_files(
         MAX_DISTANCE_RATIO,
     )
 
-    iou_dict["Boundary IoU"] = boundary_iou
+    iou_dict["Boundary_IoU"] = boundary_iou
     iou_dict["IoU"] = iou
 
     print(f"\niou_dict_from_files() => {iou_dict}")

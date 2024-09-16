@@ -1,0 +1,120 @@
+{
+  "aggregates": {
+    "all_graph_dicts": {
+      "count": 2,
+      "freq": 1
+    },
+    "anterior_distance": {
+      "25pc": 1.1035533905932737,
+      "50pc": 1.2071067811865475,
+      "75pc": 1.3106601717798214,
+      "count": 2.0,
+      "max": 1.4142135623730951,
+      "mean": 1.2071067811865475,
+      "min": 1.0,
+      "std": 0.29289321881345254
+    },
+    "graph_var_bal_acc": {
+      "anterior": 0.0,
+      "posterior": 0.0
+    },
+    "gt_fname": {
+      "count": 2,
+      "freq": 1
+    },
+    "posterior_distance": {
+      "25pc": 1.1035533905932737,
+      "50pc": 1.2071067811865475,
+      "75pc": 1.3106601717798214,
+      "count": 2.0,
+      "max": 1.4142135623730951,
+      "mean": 1.2071067811865475,
+      "min": 1.0,
+      "std": 0.29289321881345254
+    },
+    "pred_fname": {
+      "count": 2,
+      "freq": 1
+    }
+  },
+  "case": {
+    "all_graph_dicts": {
+      "0": {
+        "anterior": {
+          "gt_graph": [
+            1,
+            1,
+            0,
+            1
+          ],
+          "pred_graph": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "posterior": {
+          "gt_graph": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "pred_graph": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "1": {
+        "anterior": {
+          "gt_graph": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "pred_graph": [
+            0,
+            1,
+            1,
+            0
+          ]
+        },
+        "posterior": {
+          "gt_graph": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "pred_graph": [
+            1,
+            0,
+            1,
+            1
+          ]
+        }
+      }
+    },
+    "anterior_distance": {
+      "0": 1.0,
+      "1": 1.4142135623730951
+    },
+    "gt_fname": {
+      "0": "cow-ant-post-classification_gt.JSON",
+      "1": "topcow_ct_003.yml"
+    },
+    "posterior_distance": {
+      "0": 1.4142135623730951,
+      "1": 1.0
+    },
+    "pred_fname": {
+      "0": "cow-ant-post-classification.yml",
+      "1": "cow-ant-post-classification.json"
+    }
+  }
+}

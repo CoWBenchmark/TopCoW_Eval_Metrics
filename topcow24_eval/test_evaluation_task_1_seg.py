@@ -135,7 +135,8 @@ def test_e2e_TopCoWEvaluation_Task_1_Seg_no_crop():
         predictions_path=TESTDIR / f"{prefix}predictions/",
         ground_truth_path=TESTDIR / f"{prefix}ground-truth/",
         output_path=output_path,
-        # no roi_path supplied, even when supplied will be ignored
+        # no roi_path supplied, but even if roi_path supplied
+        # since need_crop is False, it will be ignored
     )
 
     # run the evaluation

@@ -13,8 +13,8 @@ import os
 import pprint
 from pathlib import Path
 
-from edge_dict_to_list import edge_dict_to_list
 from scipy.spatial.distance import euclidean
+from topcow24_eval.metrics.edg_metrics.edge_dict_to_list import edge_dict_to_list
 from topcow24_eval.utils.utils_edge import parse_edge_json, parse_edge_yml
 
 
@@ -65,18 +65,23 @@ def graph_dict_from_files(
     assert gt_edg_path.is_file(), "gt_edg_path doesn't exist!"
     assert pred_edg_path.is_file(), "pred_edg_path doesn't exist!"
 
-    if gt_edg_path.suffix.lower() == ".yml" and pred_edg_path.suffix.lower() == ".yml":
+    # Get the edge_dict for edge_dict_to_list()
+    print("~~~ GT edge_dict")
+    if gt_edg_path.suffix.lower() == ".yml":
         parse_edg = parse_edge_yml
-    elif (
-        gt_edg_path.suffix.lower() == ".json"
-        and pred_edg_path.suffix.lower() == ".json"
-    ):
+    elif gt_edg_path.suffix.lower() == ".json":
         parse_edg = parse_edge_json
     else:
-        raise ValueError("Invalid egde-list file extension!")
-
-    # Get the edge_dict for edge_dict_to_list()
+        raise ValueError(f"{gt_edg_path} invalid egde-list file extension!")
     gt_edge_dict = parse_edg(gt_edg_path)
+
+    print("~~~ Pred edge_dict")
+    if pred_edg_path.suffix.lower() == ".yml":
+        parse_edg = parse_edge_yml
+    elif pred_edg_path.suffix.lower() == ".json":
+        parse_edg = parse_edge_json
+    else:
+        raise ValueError(f"{pred_edg_path} invalid egde-list file extension!")
     pred_edge_dict = parse_edg(pred_edg_path)
 
     # init the graph_dict
@@ -88,6 +93,8 @@ def graph_dict_from_files(
     # First generate the graph-class (in terms of edge lists)
     # for the GT.
 
+    print(">>> GT graph")
+
     gt_ant_list, gt_pos_list = edge_dict_to_list(gt_edge_dict)
 
     graph_dict["anterior"]["gt_graph"] = gt_ant_list
@@ -95,6 +102,8 @@ def graph_dict_from_files(
 
     ############################################
     # Then for Pred
+
+    print(">>> Pred graph")
 
     pred_ant_list, pred_pos_list = edge_dict_to_list(pred_edge_dict)
 

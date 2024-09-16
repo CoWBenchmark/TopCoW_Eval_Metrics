@@ -23,11 +23,11 @@ def iou_of_sets(first_set: set, second_set: set) -> float:
     # Calculate intersection and union of two sets
     intersection = first_set.intersection(second_set)
     len_intersection = len(intersection)
-    print(f"len_intersection = {len_intersection}")
+    # print(f"len_intersection = {len_intersection}")
 
     union = first_set.union(second_set)
     len_union = len(union)
-    print(f"len_union = {len_union}")
+    # print(f"len_union = {len_union}")
 
     # Calculate IoU
     iou = len_intersection / len_union if len_union > 0 else 0
@@ -60,23 +60,23 @@ def boundary_iou_from_tuple(
 
     # use a fixed ratio for boundary distances
     size_arr_1, loc_arr_1 = first_box
-    print(f"first_box = {first_box}")
+    # print(f"first_box = {first_box}")
     dist_arr_1 = [math.ceil(s * boundary_distance_ratio) for s in size_arr_1]
-    print(f"dist_arr_1 = {dist_arr_1}")
+    # print(f"dist_arr_1 = {dist_arr_1}")
 
     size_arr_2, loc_arr_2 = second_box
-    print(f"second_box = {second_box}")
+    # print(f"second_box = {second_box}")
     dist_arr_2 = [math.ceil(s * boundary_distance_ratio) for s in size_arr_2]
-    print(f"dist_arr_2 = {dist_arr_2}")
+    # print(f"dist_arr_2 = {dist_arr_2}")
 
     # Get boundary points for both boxes
-    print("First box's boundary:")
+    # print("First box's boundary:")
     first_boundary = boundary_points_with_distances(
         size_arr=size_arr_1,
         location_arr=loc_arr_1,
         distance_arr=dist_arr_1,
     )
-    print("Second box's boundary:")
+    # print("Second box's boundary:")
     second_boundary = boundary_points_with_distances(
         size_arr=size_arr_2,
         location_arr=loc_arr_2,

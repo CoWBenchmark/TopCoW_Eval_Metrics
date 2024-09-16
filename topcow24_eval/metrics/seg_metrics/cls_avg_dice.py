@@ -5,7 +5,6 @@ Metrics for Task-1-CoW-Segmentation
 """
 
 import pprint
-from enum import Enum
 
 import numpy as np
 import SimpleITK as sitk
@@ -55,9 +54,7 @@ def dice_coefficient_single_label(
     return dice_score
 
 
-def dice_coefficient_all_classes(
-    *, gt: sitk.Image, pred: sitk.Image, task: Enum
-) -> dict:
+def dice_coefficient_all_classes(*, gt: sitk.Image, pred: sitk.Image) -> dict:
     """
     use the dict generator from generate_cls_avg_dict
     with dice_coefficient_single_label() as metric_func
@@ -65,7 +62,6 @@ def dice_coefficient_all_classes(
     dice_dict = generate_cls_avg_dict(
         gt=gt,
         pred=pred,
-        task=task,
         metric_keys=["Dice"],
         metric_func=dice_coefficient_single_label,
     )

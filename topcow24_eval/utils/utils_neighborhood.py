@@ -143,7 +143,7 @@ def get_region_N26_stats(region, padded):
     # get the N26 stats based on the values
     N26_stats = get_N26_stats(vals)
 
-    print(f"before pop0, N26_stats = {N26_stats}")
+    # print(f"before pop0, N26_stats = {N26_stats}")
 
     return N26_stats
 
@@ -162,10 +162,10 @@ def get_label_neighbors(label_props, padded) -> list[int]:
     neighbors = []
 
     for region in label_props:
-        print("\nregion.area = ", region.area)
-        # Set numpy to summarize >20 size array for neatness
-        with np.printoptions(suppress=True, threshold=20):
-            print("region.coords:\n", region.coords, region.coords.shape)
+        # print("\nregion.area = ", region.area)
+        # # Set numpy to summarize >20 size array for neatness
+        # with np.printoptions(suppress=True, threshold=20):
+        #     print("region.coords:\n", region.coords, region.coords.shape)
 
         # NOTE: get_region_N26_stats() works with padded
         N26_stats = get_region_N26_stats(region, padded)

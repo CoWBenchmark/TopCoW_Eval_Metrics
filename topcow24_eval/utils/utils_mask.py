@@ -23,11 +23,11 @@ def extract_labels(array1: np.array, array2: Optional[np.array] = None) -> list[
         labels = np.union1d(array1, array2)
     else:
         labels = np.unique(array1)
-    print("labels = ", labels)
+    # print("labels = ", labels)
 
     # remove background 0
     filtered_labels = [int(x) for x in labels[labels != 0]]
-    print(f"filtered_labels = {filtered_labels}")
+    # print(f"filtered_labels = {filtered_labels}")
     return filtered_labels
 
 

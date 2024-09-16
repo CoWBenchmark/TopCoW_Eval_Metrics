@@ -1,0 +1,3 @@
+--- ROI Meta Data ---
+Size (Voxels): 3 2 1
+Location (Voxels): 1 4 2

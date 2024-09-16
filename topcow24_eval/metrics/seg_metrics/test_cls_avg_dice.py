@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import SimpleITK as sitk
 from cls_avg_dice import dice_coefficient_all_classes, dice_coefficient_single_label
-from topcow24_eval.constants import MUL_CLASS_LABEL_MAP, TASK
+from topcow24_eval.constants import MUL_CLASS_LABEL_MAP
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 ##############################################################
@@ -136,9 +136,7 @@ def test_DiceCoefficient_2D_different_dim():
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
     with pytest.raises(AssertionError) as e_info:
-        dice_coefficient_all_classes(
-            gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-        )
+        dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
     assert str(e_info.value) == "gt pred not matching shapes!"
 
 
@@ -154,9 +152,7 @@ def test_DiceCoefficient_2D_binary():
 
     # multi-class segmentation task is also applicable
     # NOTE: but the label should now be BA instead of CoW
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
 
     assert dice_dict["1"]["label"] == MUL_CLASS_LABEL_MAP["1"]
     assert math.isclose(dice_dict["1"]["Dice"], (2 * 4) / (9 + 8))
@@ -175,9 +171,7 @@ def test_DiceCoefficient_2D_onlyLabel5():
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
     # this test should only work for multiclass task even though it only has one label
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
 
     assert dice_dict["5"]["label"] == MUL_CLASS_LABEL_MAP["5"]
     assert math.isclose(dice_dict["5"]["Dice"], (2 * 13) / (16 + 17))
@@ -200,9 +194,7 @@ def test_DiceCoefficient_2D_multiclass():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
 
     # check for label 4
     assert dice_dict["4"]["label"] == MUL_CLASS_LABEL_MAP["4"]
@@ -237,9 +229,7 @@ def test_DiceCoefficient_2D_nonOverlapped_multiclass():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
 
     assert dice_dict == {
         "1": {"label": "BA", "Dice": 1.0},
@@ -262,9 +252,7 @@ def test_DiceCoefficient_2D_nolabels_task_multiclass():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
 
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=gt_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=gt_img)
 
     assert dice_dict == {
         "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0},
@@ -278,9 +266,7 @@ def test_DiceCoefficient_2D_nolabels_task_multiclass():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    dice_dict = dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    )
+    dice_dict = dice_coefficient_all_classes(gt=gt_img, pred=pred_img)
 
     assert dice_dict == {
         "1": {"label": "BA", "Dice": 0},
@@ -310,9 +296,7 @@ def test_multi_class_donut():
     # merged binary:
     #        Dice = 1
 
-    assert dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert dice_coefficient_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "Dice": 0.7499999999999999},
         "6": {"label": "L-ICA", "Dice": 0.0},
         "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0.37499999999999994},
@@ -347,9 +331,7 @@ def test_dice_dict_e2e():
     #        Dice = 2 * 48 / (64 + 48) = 0.857
     # merged binary:
     #        Dice = 2 * (512 -8 -64 -16 -16) / (408 + 512) = 0.8869
-    assert dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert dice_coefficient_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "Dice": 1.0},
         "2": {"label": "R-PCA", "Dice": 0.9333333333333333},
         "3": {"label": "L-PCA", "Dice": 1.0},
@@ -386,9 +368,7 @@ def test_DiceCoefficient_2D_multiclass_MediumPost():
     #        Dice = 2 * 4 / (4 + 5) = 0.888
     # merged binary:
     #        Dice = 0.762 from the MediumPost
-    assert dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert dice_coefficient_all_classes(gt=gt_img, pred=pred_img) == {
         "11": {"label": "R-ACA", "Dice": 0.5},
         "12": {"label": "L-ACA", "Dice": 0},
         "15": {"label": "3rd-A2", "Dice": 0.888888888888889},
@@ -420,9 +400,7 @@ def test_DiceCoefficient_3D_Fig50():
     #        Dice = .5
     # merged binary:
     #        Dice = 2/3
-    assert dice_coefficient_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert dice_coefficient_all_classes(gt=gt_img, pred=pred_img) == {
         "10": {"label": "Acom", "Dice": 0.8},
         "15": {"label": "3rd-A2", "Dice": 0.5},
         "ClsAvgDice": {"label": "ClsAvgDice", "Dice": 0.65},
@@ -457,9 +435,7 @@ def test_DiceCoefficient_topcow023mr():
     )
 
     # has a tiny blob of label-6 overlap due to the L-ICA outlier
-    assert dice_coefficient_all_classes(
-        gt=gt, pred=pred, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert dice_coefficient_all_classes(gt=gt, pred=pred) == {
         "1": {"label": "BA", "Dice": 0.0},
         "2": {"label": "R-PCA", "Dice": 0.0},
         "3": {"label": "L-PCA", "Dice": 0.0},

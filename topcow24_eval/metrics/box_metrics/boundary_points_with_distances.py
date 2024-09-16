@@ -31,7 +31,7 @@ def boundary_points_with_distances(
 
     # boundary distances for x,y,z dimension
     dist_x, dist_y, dist_z = distance_arr
-    print(f"dist_x={dist_x}, dist_y={dist_y}, dist_z={dist_z}")
+    # print(f"dist_x={dist_x}, dist_y={dist_y}, dist_z={dist_z}")
     assert dist_x * dist_y * dist_z > 0, "distance must be positive"
 
     # each distance should not be more than ceil(half of the size)
@@ -83,7 +83,7 @@ def boundary_points_with_distances(
                 boundary_points.add((x, y_max - i, z))
 
     # display a sorted list for debugging
-    print(f"\nsorted(boundary_points):\n{sorted(boundary_points)}")
-    print(f"# boundary_points = {len(boundary_points)}\n")
+    # print(f"\nsorted(boundary_points):\n{sorted(boundary_points)}")
+    # print(f"# boundary_points = {len(boundary_points)}\n")
 
     return boundary_points

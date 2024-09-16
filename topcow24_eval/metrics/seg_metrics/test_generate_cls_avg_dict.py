@@ -4,10 +4,13 @@ from generate_cls_avg_dict import (
     update_cls_avg_dict,
     update_metrics_dict,
 )
-from topcow24_eval.constants import TASK
 
 
 def dummy_metric_func(gt, pred, label: int):
+    """
+    dummy metric_func with template:
+    func:= (gt, pred, label) => List[metric_scores] for that label
+    """
     metric_scores = [42 + label, 2024 + label, 8006 + label]
     return metric_scores
 
@@ -208,7 +211,6 @@ def test_generate_cls_avg_dict_blank_multiclass():
     cls_avg_dict = generate_cls_avg_dict(
         gt=image1,
         pred=image2,
-        task=TASK.MULTICLASS_SEGMENTATION,
         # dummy_metric_func returns 4 scores
         metric_keys=["M1", "M2", "M3"],
         metric_func=dummy_metric_func,
@@ -247,7 +249,6 @@ def test_generate_cls_avg_dict_only1BA_multiclass():
     cls_avg_dict = generate_cls_avg_dict(
         gt=image1,
         pred=image2,
-        task=TASK.MULTICLASS_SEGMENTATION,
         # dummy_metric_func returns metric_scores
         metric_keys=["M1", "M2", "M3"],
         metric_func=dummy_metric_func,
@@ -284,7 +285,6 @@ def test_generate_cls_avg_dict_label123_multiclass():
     cls_avg_dict = generate_cls_avg_dict(
         gt=image1,
         pred=image2,
-        task=TASK.MULTICLASS_SEGMENTATION,
         # dummy_metric_func returns metric_scores
         metric_keys=["M1", "M2", "M3"],
         metric_func=dummy_metric_func,
@@ -324,7 +324,6 @@ def test_generate_cls_avg_dict_label101112HD_multiclass():
     cls_avg_dict = generate_cls_avg_dict(
         gt=image1,
         pred=image2,
-        task=TASK.MULTICLASS_SEGMENTATION,
         # use a lambda to return metric_scores
         metric_keys=["HD", "HD95"],
         # metric_func returns a List[float]

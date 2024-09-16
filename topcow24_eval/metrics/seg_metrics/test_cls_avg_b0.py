@@ -11,7 +11,6 @@ from cls_avg_b0 import (
     betti_number_error_single_label,
     connected_components,
 )
-from topcow24_eval.constants import TASK
 from topcow24_eval.utils.utils_nii_mha_sitk import load_image_and_array_as_uint8
 
 ##############################################################
@@ -185,9 +184,7 @@ def test_cls_avg_b0_RGB():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 0},
         "2": {"label": "R-PCA", "B0err": 1},
         "3": {"label": "L-PCA", "B0err": 0},
@@ -208,9 +205,7 @@ def test_singleBlob_noBorder_betti_num_err_dict():
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
     # label-1 for multiclass segmentation task is BA
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 0},
         "ClsAvgB0err": {"label": "ClsAvgB0err", "B0err": 0.0},
         "MergedBin": {"label": "MergedBin", "B0err": 0},
@@ -254,9 +249,7 @@ def test_multi_class_twoIslands():
     # Pred has the same Betti numbers for:
     # label 1 and label 2 and merged binary
 
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 0},
         "2": {"label": "R-PCA", "B0err": 2},
         "ClsAvgB0err": {"label": "ClsAvgB0err", "B0err": 1},
@@ -292,9 +285,7 @@ def test_multi_class_donut():
     # Pred has the same Betti numbers for merged binary
     # but label-1 and label-6 should have B0=1, B1=0, B2=0
 
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 0},
         "6": {"label": "L-ICA", "B0err": 1},
         "ClsAvgB0err": {"label": "ClsAvgB0err", "B0err": 1 / 2},
@@ -353,9 +344,7 @@ def test_betti_num_err_dict_e2e():
     #        B0=1, B1=1, B2=0
     # merged binary:
     #        B0=1, B1=1, B2=1
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 0},
         "2": {"label": "R-PCA", "B0err": 0},
         "3": {"label": "L-PCA", "B0err": 0},
@@ -379,9 +368,7 @@ def test_bettiError_nolabels_multiclass():
 
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
 
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=gt_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=gt_img) == {
         "ClsAvgB0err": {"label": "ClsAvgB0err", "B0err": 0},
         "MergedBin": {"label": "MergedBin", "B0err": 0},
     }
@@ -393,9 +380,7 @@ def test_bettiError_nolabels_multiclass():
     gt_img, _ = load_image_and_array_as_uint8(gt_path)
     pred_img, _ = load_image_and_array_as_uint8(pred_path)
 
-    assert betti_number_error_all_classes(
-        gt=gt_img, pred=pred_img, task=TASK.MULTICLASS_SEGMENTATION
-    ) == {
+    assert betti_number_error_all_classes(gt=gt_img, pred=pred_img) == {
         "1": {"label": "BA", "B0err": 1},
         "ClsAvgB0err": {"label": "ClsAvgB0err", "B0err": 1},
         "MergedBin": {"label": "MergedBin", "B0err": 1},

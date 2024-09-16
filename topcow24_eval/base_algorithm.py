@@ -2,26 +2,30 @@ import json
 import logging
 import os
 import pprint
-from enum import Enum
 from os import PathLike
 from pathlib import Path
 from typing import Optional
 
 from evalutils import ClassificationEvaluation
 from evalutils.exceptions import FileLoaderError
-from evalutils.io import SimpleITKLoader
+from evalutils.io import FileLoader, SimpleITKLoader
 from evalutils.validators import NumberOfCasesValidator
-from pandas import DataFrame, concat, merge
+from pandas import DataFrame, concat, merge, set_option
 
 from topcow24_eval.aggregate.aggregate_all_detection_dicts import (
     aggregate_all_detection_dicts,
 )
 from topcow24_eval.aggregate.aggregate_all_graph_dicts import aggregate_all_graph_dicts
 from topcow24_eval.aggregate.aggregate_all_topo_dicts import aggregate_all_topo_dicts
-from topcow24_eval.constants import TASK
+from topcow24_eval.constants import SLUG_OUTPUT, TASK, TRACK
+from topcow24_eval.for_gc_docker import is_docker, load_predictions_json
 from topcow24_eval.utils.tree_view_dir import DisplayablePath
 
 logger = logging.getLogger(__name__)
+
+# display more content when printing pandas
+set_option("display.max_columns", None)
+set_option("max_colwidth", None)
 
 
 class MySegmentationEvaluation(ClassificationEvaluation):
@@ -34,8 +38,8 @@ class MySegmentationEvaluation(ClassificationEvaluation):
 
     def __init__(
         self,
-        track: Enum,
-        task: Enum,
+        track: TRACK,
+        task: TASK,
         expected_num_cases: int,
         need_crop: bool,
         predictions_path: Optional[PathLike] = None,
@@ -45,12 +49,12 @@ class MySegmentationEvaluation(ClassificationEvaluation):
     ):
         self.track = track
         self.task = task
-        # sanity switch off if task is not Task-1-CoW-Segmentation
-        if self.task != TASK.MULTICLASS_SEGMENTATION:
+        # switch self.need_crop off if task is not Task-1-CoW-Segmentation
+        if self.task is not TASK.MULTICLASS_SEGMENTATION:
             self.need_crop = False
         else:
             self.need_crop = need_crop
-        self.execute_in_docker = _is_docker()
+        self.execute_in_docker = is_docker()
 
         print(f"[init] track = {self.track.value}")
         print(f"[init] task = {self.task.value}")
@@ -62,6 +66,7 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             ground_truth_path = Path("/opt/app/ground-truth/")
             output_file = Path("/output/metrics.json")
             roi_path = Path("/opt/app/roi-metadata/") if self.need_crop else None
+            self.predictions_json = Path("/input/predictions.json")
         else:
             # When not in docker environment, the paths of pred, gt, roi etc
             # are set to be on the same level as package dir `topcow24_eval`
@@ -100,12 +105,8 @@ class MySegmentationEvaluation(ClassificationEvaluation):
                     else resource_path / "roi-metadata/"
                 )
 
-        # mkdir for *_path if not exist
-        for _path in (predictions_path, ground_truth_path, output_path):
-            Path(_path).mkdir(parents=True, exist_ok=True)
-
-        if self.need_crop:
-            Path(roi_path).mkdir(parents=True, exist_ok=True)
+        # mkdir for out_path if not exist
+        Path(output_path).mkdir(parents=True, exist_ok=True)
 
         print(f"[path] predictions_path={predictions_path}")
         print(f"[path] ground_truth_path={ground_truth_path}")
@@ -114,27 +115,22 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             print(f"[path] roi_path={roi_path}")
 
         # do not proceed if input|predictions|ground-truth folders are empty
-        input_pred_files = [
-            name
-            for name in os.listdir(predictions_path)
-            if os.path.isfile(os.path.join(predictions_path, name))
-        ]
-        num_input_pred = len(input_pred_files)
-
-        ground_truth_files = [
-            name
-            for name in os.listdir(ground_truth_path)
-            if os.path.isfile(os.path.join(ground_truth_path, name))
-        ]
-        num_ground_truth = len(ground_truth_files)
-
-        if need_crop:
-            roi_txt_files = [
-                name
-                for name in os.listdir(roi_path)
-                if os.path.isfile(os.path.join(roi_path, name))
+        num_input_pred = len(
+            [
+                str(x)
+                for x in predictions_path.rglob("*")
+                if x.is_file() and x.name != "predictions.json"
             ]
-            num_roi_txt = len(roi_txt_files)
+        )
+
+        num_ground_truth = len(
+            [str(x) for x in ground_truth_path.rglob("*") if x.is_file()]
+        )
+
+        if self.need_crop:
+            num_roi_txt = len(
+                [str(x) for x in roi_path.rglob("*") if x.suffix == ".txt"]
+            )
 
         print(f"num_input_pred = {num_input_pred}")
         print(f"num_ground_truth = {num_ground_truth}")
@@ -154,14 +150,47 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             for _ in DisplayablePath.make_tree(roi_path):
                 print(_.displayable())
 
+        # slug for input interface (for gc docker)
+        self.slug_input = f"head-{self.track.value}-angiography"
+
+        # depending on the task,
+        # set slug for outer interface (for gc docker)
+        # set file_loader
+        # set self.extensions
+
+        if self.task is TASK.MULTICLASS_SEGMENTATION:
+            self.slug_output = SLUG_OUTPUT.TASK_1_SEG.value
+            # NOTE: SimpleITKLoader is subclass of evalutils ImageLoader
+            # ImageLoader returns [{"hash": self.hash_image(img), "path": fname}]
+            file_loader = SimpleITKLoader()
+            # task-1:
+            # ground truth rglob for *.nii.gz, prediction rglob for *.mha
+            self.extensions = ("*.nii.gz", "*.nii", "*.mha")
+        elif self.task is TASK.OBJECT_DETECTION:
+            self.slug_output = SLUG_OUTPUT.TASK_2_BOX.value
+            # GenericLoader returns [{"hash": self.hash_file(data), "path": fname}]
+            file_loader = GenericLoader()
+            # task-2:
+            # ground truth rglob for *.txt, prediction rglob for *.json
+            self.extensions = ("*.txt", "*.TXT", "*.json", "*.JSON")
+        elif self.task is TASK.GRAPH_CLASSIFICATION:
+            self.slug_output = SLUG_OUTPUT.TASK_3_EDG.value
+            file_loader = GenericLoader()
+            # task-3:
+            # ground truth rglob for *.yml, prediction rglob for *.json
+            self.extensions = ("*.yml", "*.json", "*.JSON")
+        else:
+            raise ValueError("Unknown task!")
+
         super().__init__(
             ground_truth_path=ground_truth_path,
             predictions_path=predictions_path,
             # use Default: `None` (alphanumerical) for file_sorter_key
             file_sorter_key=None,
-            # NOTE: SimpleITKLoader is subclass of evalutils ImageLoader
-            # ImageLoader returns [{"hash": self.hash_image(img), "path": fname}]
-            file_loader=SimpleITKLoader(),
+            # file_loader is of type FileLoader from evalutils.io
+            # task-1 uses SimpleITKLoader
+            # task-2 and task-2 use GenericLoader
+            file_loader=file_loader,
             validators=(
                 # we use the NumberOfCasesValidator to check that the correct number
                 # of cases has been submitted by the challenge participant
@@ -179,16 +208,6 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             self._roi_validators = (
                 NumberOfCasesValidator(num_cases=expected_num_cases),
             )
-
-        self.SLUG_INPUT = f"head-{self.track.value}-angiography"
-        if self.task == TASK.MULTICLASS_SEGMENTATION:
-            self.SLUG_OUTPUT = "circle-of-willis-multiclass-segmentation"
-        elif self.task == TASK.OBJECT_DETECTION:
-            self.SLUG_OUTPUT = "circle-of-willis-roi"
-        elif self.task == TASK.GRAPH_CLASSIFICATION:
-            self.SLUG_OUTPUT = "circle-of-willis-classification"
-        else:
-            raise ValueError("Unknown task!")
 
         print("Path at terminal when executing this file")
         print(os.getcwd() + "\n")
@@ -226,8 +245,11 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             # You as a challenge organizer must, therefore,
             # read /input/predictions.json to map the output filenames
             # with the input filenames
-            self.mapping_dict = self.load_predictions_json(
-                Path("/input/predictions.json")
+            self.mapping_dict = load_predictions_json(
+                fname=self.predictions_json,
+                slug_input=self.slug_input,
+                slug_output=self.slug_output,
+                task=self.task,
             )
             print("******* self.mapping_dict *******")
             pprint.pprint(self.mapping_dict, sort_dicts=False)
@@ -251,10 +273,10 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             ).reset_index(drop=True)
 
         print("*** after sorting ***")
-        print(f"self._ground_truth_cases =\n{self._ground_truth_cases}")
+        print(f"\nself._ground_truth_cases =\n{self._ground_truth_cases}")
         if self.need_crop:
-            print(f"self._roi_cases =\n{self._roi_cases}")
-        print(f"self._predictions_cases =\n{self._predictions_cases}")
+            print(f"\nself._roi_cases =\n{self._roi_cases}")
+        print(f"\nself._predictions_cases =\n{self._predictions_cases}")
 
     def _load_cases(self, *, folder: Path) -> DataFrame:
         """
@@ -263,11 +285,20 @@ class MySegmentationEvaluation(ClassificationEvaluation):
         print(f"\n-- call _load_cases(folder={folder})")
         cases = None
 
-        # ground truth rglob for .nii.gz, prediction rglob for .mha
-        img_files = list(folder.rglob("*.nii.gz")) + list(folder.rglob("*.mha"))
-        for f in sorted(img_files, key=self._file_sorter_key):
+        # Use rglob to recursively find all matching extension files,
+        # but excluding predictions.json
+        files = [
+            f
+            for ext in self.extensions
+            for f in folder.rglob(ext)
+            if f.name != "predictions.json"
+        ]
+        print("rglob files =")
+        pprint.pprint(files)
+
+        for f in sorted(files, key=self._file_sorter_key):
             try:
-                # class ImageLoader load() returns
+                # class ImageLoader and GenericLoader load() returns
                 # [{"hash": self.hash_image(img), "path": fname}]
                 new_cases = self._file_loader.load(fname=f)
             except FileLoaderError:
@@ -305,57 +336,6 @@ class MySegmentationEvaluation(ClassificationEvaluation):
 
         print(f"roi_cases = {roi_cases}")
         return DataFrame(roi_cases)
-
-    def load_predictions_json(self, fname: Path):
-        """
-        from
-        https://grand-challenge.org/documentation/automated-evaluation/
-
-        loads the JSON, loops through the inputs and outputs,
-        and then finds the exact filenames for the outputs
-        """
-        print(f"\n-- call load_predictions_json(fname={fname})")
-        cases = {}
-
-        with open(fname, "r") as f:
-            entries = json.load(f)
-
-        if isinstance(entries, float):
-            raise TypeError(f"entries of type float for file: {fname}")
-
-        for e in entries:
-            # Find case name through input file name
-            inputs = e["inputs"]
-
-            print("\nself.SLUG_INPUT = ", self.SLUG_INPUT)
-            print("len(inputs) = ", len(inputs))
-            print("inputs[0] = ", inputs[0])
-
-            name = None
-            for input in inputs:
-                if input["interface"]["slug"] == self.SLUG_INPUT:
-                    name = str(input["image"]["name"])
-                    print("*** name = ", name)
-                    break  # expecting only a single input
-            if name is None:
-                raise ValueError(f"No filename found for entry: {e}")
-
-            # Find output value for this case
-            outputs = e["outputs"]
-
-            print("\nself.SLUG_OUTPUT = ", self.SLUG_OUTPUT)
-            print("len(outputs) = ", len(outputs))
-            print("outputs[0] = ", outputs[0])
-
-            for output in outputs:
-                if output["interface"]["slug"] == self.SLUG_OUTPUT:
-                    pk = output["image"]["pk"]
-                    print("*** pk = ", pk)
-                    if ".mha" not in pk:
-                        pk += ".mha"
-                    cases[pk] = name
-
-        return cases
 
     def validate(self):
         """
@@ -406,7 +386,8 @@ class MySegmentationEvaluation(ClassificationEvaluation):
                 suffixes=("_ground_truth", "_prediction"),
                 **kwargs,
             )
-            print(f"after 1st merge()=, merged=\n{merged.to_dict()}")
+            print("after 1st merge()=, merged=\n")
+            pprint.pprint(merged.to_dict(), sort_dicts=False)
 
             self._cases = merge(
                 left=self._roi_cases,
@@ -462,7 +443,7 @@ class MySegmentationEvaluation(ClassificationEvaluation):
         # self._case_results.to_pickle("self._case_results.pkl")
         # self._case_results.to_csv("self._case_results.csv")
 
-        if self.task == TASK.MULTICLASS_SEGMENTATION:
+        if self.task is TASK.MULTICLASS_SEGMENTATION:
             # NOTE: for Task-1-CoW-Segmentation
             # work with self._case_results
             # to post-aggregate detection_dict, graph_dict, topo_dict
@@ -497,6 +478,23 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             # add back to self._aggregate_results dict
             self._aggregate_results["topo_var_bal_acc"] = topo_var_bal_acc
 
+        elif self.task is TASK.GRAPH_CLASSIFICATION:
+            # NOTE: similarly for Task-3-CoW-Classification
+            # work with self._case_results
+            # to post-aggregate graph_dict
+            # to get variant-average balanced accuracy
+            # add the post-aggregate straight to the
+            # self._aggregate_results dict
+
+            # metric-1 Variant-balanced graph classification accuracy
+            # graph_dict is under the column `all_graph_dicts`
+            graph_var_bal_acc = aggregate_all_graph_dicts(
+                self._case_results["all_graph_dicts"]
+            )
+
+            # add back to self._aggregate_results dict
+            self._aggregate_results["graph_var_bal_acc"] = graph_var_bal_acc
+
     def save(self):
         """
         Overwrite evalutils save()
@@ -515,18 +513,37 @@ class MySegmentationEvaluation(ClassificationEvaluation):
             f.write(json.dumps(self._metrics, indent=2, sort_keys=True))
 
 
-def _is_docker():
+############################
+# custom file loader for box and edgelist
+class GenericLoader(FileLoader):
     """
-    check if process.py is run in a docker env
-        bash test.sh vs python3 process.py
+    A generic file loader for bounding box and edgelist
+    compatible with SimpleITKLoader used in task-1
 
-    from https://stackoverflow.com/questions/43878953/how-does-one-detect-if-one-is-running-within-a-docker-container-within-python
+    Since
+        box_metrics/iou_dict_from_files.py
+        metrics/edg_metrics/graph_dict_from_files.py
+    works directly
+    with os.PathLike as input, thus our .load() method will
+    hash the raw binary of the file and get its path:
+
+    -> [{"hash": self.hash_file(data), "path": fname}]
     """
-    cgroup = Path("/proc/self/cgroup")
-    exec_in_docker = (
-        Path("/.dockerenv").is_file()
-        or cgroup.is_file()
-        and "docker" in cgroup.read_text()
-    )
-    print(f"exec_in_docker? {exec_in_docker}")
-    return exec_in_docker
+
+    def load(self, *, fname: Path) -> list[dict]:
+        try:
+            data = self.load_file(fname)
+        except (ValueError, RuntimeError):
+            raise FileLoaderError(
+                f"Could not load {fname} using {self.__class__.__qualname__}."
+            )
+        return [{"hash": self.hash_file(data), "path": fname}]
+
+    @staticmethod
+    def load_file(fname: Path) -> bytes:
+        return fname.read_bytes()
+
+    @staticmethod
+    def hash_file(file_contents: bytes) -> int:
+        """similar to ImageLoader's hash_image"""
+        return hash(file_contents)

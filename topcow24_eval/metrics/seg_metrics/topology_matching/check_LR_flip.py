@@ -58,11 +58,11 @@ def check_LR_flip(pred: sitk.Image, region: str) -> bool:
         label_R_ACA = get_label_by_name("R-ACA", MUL_CLASS_LABEL_MAP)
 
         if {label_L_ICA, label_R_ICA}.issubset(set(labels)):
-            print("Use ICA")
+            # print("Use ICA")
             left_organ = np.median(np.where(mask_arr == label_L_ICA)[0])
             right_organ = np.median(np.where(mask_arr == label_R_ICA)[0])
         elif {label_L_ACA, label_R_ACA}.issubset(set(labels)):
-            print("Use ACA")
+            # print("Use ACA")
             left_organ = np.median(np.where(mask_arr == label_L_ACA)[0])
             right_organ = np.median(np.where(mask_arr == label_R_ACA)[0])
         else:
@@ -77,7 +77,7 @@ def check_LR_flip(pred: sitk.Image, region: str) -> bool:
         label_R_PCA = get_label_by_name("R-PCA", MUL_CLASS_LABEL_MAP)
 
         if {label_L_PCA, label_R_PCA}.issubset(set(labels)):
-            print("Use PCA")
+            # print("Use PCA")
             left_organ = np.median(np.where(mask_arr == label_L_PCA)[0])
             right_organ = np.median(np.where(mask_arr == label_R_PCA)[0])
         else:
@@ -86,8 +86,8 @@ def check_LR_flip(pred: sitk.Image, region: str) -> bool:
 
     # check for LR flip using the median x index
 
-    print(f"left_organ = {left_organ}")
-    print(f"right_organ = {right_organ}")
+    # print(f"left_organ = {left_organ}")
+    # print(f"right_organ = {right_organ}")
 
     flipped = bool(left_organ < right_organ)
     print(f"flipped? {flipped}")

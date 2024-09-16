@@ -18,10 +18,12 @@ def parse_roi_txt(roi_txt) -> tuple[list, list]:
     print(f"\n--- parse_roi_txt({roi_txt}) ---")
     with open(roi_txt) as f:
         lines = f.readlines()
-        size_arr = re.findall(r"\b\d+\b", lines[1])
-        location_arr = re.findall(r"\b\d+\b", lines[2])
 
     print(lines)
+
+    size_arr = re.findall(r"\b\d+\b", lines[1])
+    location_arr = re.findall(r"\b\d+\b", lines[2])
+
     print(size_arr)
     print(location_arr)
     print("--- EOF roi_txt ---")
