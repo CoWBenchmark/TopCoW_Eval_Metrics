@@ -129,8 +129,6 @@ In [`topcow24_eval/metrics/edg_metrics/`](./topcow24_eval/metrics/edg_metrics/),
 1. Variant-balanced accuracy:
     * [`graph_dict_from_files.py`](./topcow24_eval/metrics/edg_metrics/graph_dict_from_files.py)
     * [`aggregate_all_graph_dicts.py`](./topcow24_eval/aggregate/aggregate_all_graph_dicts.py)
-2. Distance between ground-truth and predicted 4-element vectors
-    * [`graph_dict_from_files.py`](./topcow24_eval/metrics/edg_metrics/graph_dict_from_files.py)
 
 ---
 
