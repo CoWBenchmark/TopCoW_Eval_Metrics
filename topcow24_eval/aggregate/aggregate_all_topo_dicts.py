@@ -26,7 +26,8 @@ def aggregate_all_topo_dicts(all_topo_dicts: Series) -> dict:
         {'pred_topology': {'anterior': {}, 'posterior'{}}
         'match_verdict': {'anterior': True, 'posterior': True}}
 
-    Similar to , we use sklearn.metrics.balanced_accuracy_score
+    Similar to aggregate_all_graph_dicts.py,
+    we use sklearn.metrics.balanced_accuracy_score
     which considers only the classes in y_true
 
     when constructing the y_true: use the gt_topology["graph"]
